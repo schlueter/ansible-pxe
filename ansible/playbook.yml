@@ -1,0 +1,45 @@
+---
+- hosts: all
+  gather_facts: yes
+  pre_tasks:
+    - apt: update_cache=yes state=latest name='{{ item }}'
+      with_items:
+        - inetutils-inetd
+        - tftpd-hpa
+        - isc-dhcp-server
+        - nginx
+
+    - copy: dest=/etc/default/tftpd-hpa
+      args:
+        content: |
+          RUN_DAEMON="yes"
+          OPTIONS="-l -s /var/lib/tftpboot"
+      notify: Restart tftpd-hpa
+
+    - copy: dest=/etc/dhcp/dhcpd.conf
+      args:
+        content: |
+          subnet 192.168.42.0 netmask 255.255.255.0 {
+            range 192.168.42.10 192.168.42.100;
+            filename "pxelinux.0";
+          }
+      notify: Restart dhcp3-server
+
+    - lineinfile:
+        dest=/etc/inetd.conf
+        line='tftp    dgram   udp4    wait    root    /usr/sbin/in.tftpd /usr/sbin/in.tftpd -s /var/lib/tftpboot'
+
+    - mount:
+        name=/mnt
+        src=/vagrant/CentOS-7-x86_64-Minimal-1511.iso
+        fstype=iso9660
+        state=mounted
+
+    - file: state=directory path=/var/lib/tftpboot
+    - command: cp -R /mnt/ /var/lib/tftpboot/
+
+  handlers:
+    - name: Restart tftpd-hpa
+      service:  name=tftpd-hpa state=restarted
+    - name: Restart dhcp3-server
+      service: name=isc-dhcp-server state=restarted
