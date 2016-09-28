@@ -7,20 +7,24 @@
         - dnsmasq
         - nginx
         - syslinux
+        - syslogd
+
+    - copy: dest=/etc/resolv.dnsmasq.conf
+      args:
+        content: |
+          nameserver 8.8.8.8
+      notify: Restart dnsmasq
 
     - copy: dest=/etc/dnsmasq.conf
       args:
         content: |
-          port=0
           interface=eth1
           dhcp-range=192.168.42.10,192.168.42.20
+          dhcp-option=option:router,192.168.42.1
           dhcp-boot=pxelinux.0
-          dhcp-option=6,0.0.0.0,8.8.8.8
-          dhcp-option-force=tag:bios,209,pxelinux.cfg/default
-          pxe-service=tag:bios,x86PC,"x86 bios boot msg",pxelinux
           enable-tftp
           tftp-root=/var/lib/tftpboot
-
+          server=8.8.8.8
       notify: Restart dnsmasq
 
     - mount:
@@ -36,48 +40,42 @@
         content: |
           default vesamenu.c32
           prompt 0
-          timeout 300
+          timeout 50
           menu title ########## PXE Boot Menu ##########
-          label 1
-          menu label ^1) Install CentOS 7 x64 from Kickstart
-          kernel isolinux/vmlinuz
-          append initrd=isolinux/initrd.img ks=http://192.168.42.2/centos7-ks.cfg
-          label 2
-          menu label ^2) Install CentOS 7 x64 with Local Repo
-          kernel isolinux/vmlinuz
-          append initrd=isolinux/initrd.img method=http://192.168.42.2/ devfs=nomount
-          label 3
-          menu label ^3) Boot from local drive
+          menu background r29.png
+          menu autoboot Gonna do that thing in #
+          menu tabmsg Pick a thing
+          menu color screen 47 FFFFFFFF FFFFFFFF std
+          label Centos 7 Kickstart install
+            menu label ^1) Install CentOS 7 x64 from Kickstart
+            kernel isolinux/vmlinuz
+            append initrd=isolinux/initrd.img ks=http://192.168.42.2/centos7-ks.cfg
+          label Centos 7 Gui install
+            menu label ^2) Install CentOS 7 x64 with Local Repo
+            kernel isolinux/vmlinuz
+            append initrd=isolinux/initrd.img method=http://192.168.42.2/ devfs=nomount
+          label local
+            menu label ^3) Boot from local drive
 
     - copy: dest=/var/lib/tftpboot/centos7-ks.cfg
       args:
         content: |
-          install
+          auth --passalgo=sha512
           autostep
-          reboot
-          # System authorization information
-          auth --enableshadow --passalgo=sha512
-          # Use network installation
-          url --url="http://192.168.42.2/"
-          # Run the Setup Agent on first boot
-          firstboot --enable
-          ignoredisk --only-use=sda
-          # Keyboard layouts
-          keyboard --vckeymap=us --xlayouts='us'
-          # System language
-          lang en_US.UTF-8
-          # Network information
-          network  --bootproto=dhcp --device=enp0s8 --ipv6=auto --activate
-          network  --hostname=localhost.localdomain
-          # Root password
-          rootpw --iscrypted $6$PlqMCtdIFl7gP4nH$fS1/2/BKGTA4Rw7rns/p.cStNzQFKuaRXPvhNbJjiL7hbo8YFyabNqFKCbOz.ZsH8/5iUiE7Bo67RiLgAniBU/
-          # System timezone
-          timezone America/New_York --isUtc
-          # System bootloader configuration
           bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda
-          autopart --type=lvm
-          # Partition clearing information
-          clearpart --none --initlabel
+          text
+          install
+          keyboard --vckeymap=us --xlayouts='us'
+          lang en_US.UTF-8
+          logging --host=192.168.42.2 --level info
+          network --bootproto=dhcp --device=enp0s8 --ipv6=auto --activate
+          network --hostname=localhost.localdomain
+          reboot
+          rootpw --iscrypted $6$PlqMCtdIFl7gP4nH$fS1/2/BKGTA4Rw7rns/p.cStNzQFKuaRXPvhNbJjiL7hbo8YFyabNqFKCbOz.ZsH8/5iUiE7Bo67RiLgAniBU/
+          selinux --disabled
+          skipx
+          timezone America/New_York --isUtc
+          url --url="http://192.168.42.2/"
           %packages
           @^minimal
           @core
@@ -85,6 +83,8 @@
           %end
           %addon com_redhat_kdump --enable --reserve-mb='auto'
           %end
+
+    - copy: src=r29.png dest=/var/lib/tftpboot/
 
     - shell: cp -R /mnt/* /var/lib/tftpboot/
     - shell: cp /usr/lib/syslinux/pxelinux.0 /var/lib/tftpboot/
@@ -107,10 +107,6 @@
       notify: Restart nginx
 
     - file: state=directory path=/srv/pxe
-
-    - lineinfile: dest=/etc/hosts line='{{ guest_ip_address }} {{ guest_hostname }}'
-      delegate_to: localhost
-      become: yes
 
   handlers:
     - name: Restart dnsmasq
