@@ -4,30 +4,24 @@
   pre_tasks:
     - apt: update_cache=yes state=latest name='{{ item }}'
       with_items:
-        - inetutils-inetd
-        - tftpd-hpa
-        - isc-dhcp-server
+        - dnsmasq
         - nginx
+        - syslinux
 
-    - copy: dest=/etc/default/tftpd-hpa
+    - copy: dest=/etc/dnsmasq.conf
       args:
         content: |
-          RUN_DAEMON="yes"
-          OPTIONS="-l -s /var/lib/tftpboot"
-      notify: Restart tftpd-hpa
+          port=0
+          interface=eth1
+          dhcp-range=192.168.42.10,192.168.42.20
+          dhcp-boot=pxelinux.0
+          dhcp-option=6,0.0.0.0,8.8.8.8
+          dhcp-option-force=tag:bios,209,pxelinux.cfg/default
+          pxe-service=tag:bios,x86PC,"x86 bios boot msg",pxelinux
+          enable-tftp
+          tftp-root=/var/lib/tftpboot
 
-    - copy: dest=/etc/dhcp/dhcpd.conf
-      args:
-        content: |
-          subnet 192.168.42.0 netmask 255.255.255.0 {
-            range 192.168.42.10 192.168.42.100;
-            filename "pxelinux.0";
-          }
-      notify: Restart dhcp3-server
-
-    - lineinfile:
-        dest=/etc/inetd.conf
-        line='tftp    dgram   udp4    wait    root    /usr/sbin/in.tftpd /usr/sbin/in.tftpd -s /var/lib/tftpboot'
+      notify: Restart dnsmasq
 
     - mount:
         name=/mnt
@@ -35,11 +29,53 @@
         fstype=iso9660
         state=mounted
 
-    - file: state=directory path=/var/lib/tftpboot
-    - command: cp -R /mnt/ /var/lib/tftpboot/
+    - file: state=directory path=/var/lib/tftpboot/pxelinux.cfg/
+
+    - copy: dest=/var/lib/tftpboot/pxelinux.cfg/default
+      args:
+        content: |
+          default vesamenu.c32
+          prompt 0
+          timeout 300
+          ONTIMEOUT local
+          menu title ########## PXE Boot Menu ##########
+          label 1
+          menu label ^1) Install CentOS 7 x64 with Local Repo
+          kernel centos7/vmlinuz
+          append initrd=centos7/initrd.img method=http://192.168.42.2/ devfs=nomount
+          label 2
+          menu label ^2) Install CentOS 7 x64 with http://mirror.centos.org Repo
+          kernel centos7/vmlinuz
+          append initrd=centos7/initrd.img method=http://mirror.centos.org/centos/7/os/x86_64/ devfs=nomount ip=dhcp
+          label 3
+          menu label ^3) Install CentOS 7 x64 with Local Repo using VNC
+          kernel centos7/vmlinuz
+          append  initrd=centos7/initrd.img method=ftp://192.168.42.2/ devfs=nomount inst.vnc inst.vncpassword=password
+          label 4
+          menu label ^4) Boot from local drive
+
+    - shell: cp -R /mnt/* /var/lib/tftpboot/
+    - shell: cp /usr/lib/syslinux/pxelinux.0 /var/lib/tftpboot/
+    - shell: cp /usr/lib/syslinux/vesamenu.c32 /var/lib/tftpboot/
+
+    - template: dest=/etc/nginx/sites-available/ src=etc/nginx/sites-available/pxe
+      notify: Restart nginx
+
+    - file: state=link src=../sites-available/pxe path=/etc/nginx/sites-enabled/pxe
+      notify: Restart nginx
+
+    - file: state=absent path=/etc/nginx/sites-enabled/default
+      notify: Restart nginx
+
+    - file: state=directory path=/srv/pxe
+
+    - lineinfile: dest=/etc/hosts line='{{ guest_ip_address }} {{ guest_hostname }}'
+      delegate_to: localhost
+      become: yes
+
 
   handlers:
-    - name: Restart tftpd-hpa
-      service:  name=tftpd-hpa state=restarted
-    - name: Restart dhcp3-server
-      service: name=isc-dhcp-server state=restarted
+    - name: Restart dnsmasq
+      service:  name=dnsmasq state=restarted
+    - name: Restart nginx
+      service: name=nginx state=restarted

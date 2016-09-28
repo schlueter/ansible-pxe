@@ -1,0 +1,8 @@
+server {
+        listen   80;
+
+        root /var/lib/tftpboot;
+        autoindex on;
+
+        server_name localhost pxe.local.rf29.net;
+}
