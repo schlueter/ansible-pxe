@@ -18,12 +18,12 @@
           dhcp-boot=pxelinux.0
           enable-tftp
           tftp-root=/var/lib/tftpboot
-          server=8.8.8.8
       notify: Restart dnsmasq
 
+    - get_url: dest=/srv/ url=http://mirror.lug.udel.edu/pub/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso
     - mount:
         name=/mnt
-        src=/vagrant/CentOS-7-x86_64-Minimal-1511.iso
+        src=/srv/CentOS-7-x86_64-Minimal-1511.iso
         fstype=iso9660
         state=mounted
 
@@ -72,11 +72,9 @@
           %addon com_redhat_kdump --enable --reserve-mb='auto'
           %end
 
-    - copy: src=r29.png dest=/var/lib/tftpboot/
-
     - shell: cp -R /mnt/* /var/lib/tftpboot/
-    - shell: cp /usr/lib/syslinux/pxelinux.0 /var/lib/tftpboot/
-    - shell: cp /usr/lib/syslinux/vesamenu.c32 /var/lib/tftpboot/
+    - command: cp /usr/lib/syslinux/pxelinux.0 /var/lib/tftpboot/
+    - command: cp /usr/lib/syslinux/vesamenu.c32 /var/lib/tftpboot/
 
     - copy: dest=/etc/nginx/sites-available/pxe
       args:
