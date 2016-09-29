@@ -9,12 +9,6 @@
         - syslinux
         - syslogd
 
-    - copy: dest=/etc/resolv.dnsmasq.conf
-      args:
-        content: |
-          nameserver 8.8.8.8
-      notify: Restart dnsmasq
-
     - copy: dest=/etc/dnsmasq.conf
       args:
         content: |
@@ -41,11 +35,6 @@
           default vesamenu.c32
           prompt 0
           timeout 50
-          menu title ########## PXE Boot Menu ##########
-          menu background r29.png
-          menu autoboot Gonna do that thing in #
-          menu tabmsg Pick a thing
-          menu color screen 47 FFFFFFFF FFFFFFFF std
           label Centos 7 Kickstart install
             menu label ^1) Install CentOS 7 x64 from Kickstart
             kernel isolinux/vmlinuz
@@ -69,7 +58,6 @@
           lang en_US.UTF-8
           logging --host=192.168.42.2 --level info
           network --bootproto=dhcp --device=enp0s8 --ipv6=auto --activate
-          network --hostname=localhost.localdomain
           reboot
           rootpw --iscrypted $6$PlqMCtdIFl7gP4nH$fS1/2/BKGTA4Rw7rns/p.cStNzQFKuaRXPvhNbJjiL7hbo8YFyabNqFKCbOz.ZsH8/5iUiE7Bo67RiLgAniBU/
           selinux --disabled
