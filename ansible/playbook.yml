@@ -9,7 +9,11 @@
     kickstart_wsgi_app: "{{ kickstart_wsgi_app_dir }}/app.py"
   tasks:
     - name: Install prerequisite apt packages
-      apt: update_cache=yes state=latest name='{{ item }}' cache_valid_time=20000
+      apt:
+        update_cache=yes
+        state=latest
+        name={{ item }}
+        cache_valid_time=20000
       with_items:
         - dnsmasq
         - nginx
@@ -49,7 +53,9 @@
         checksum=md5:14ec4c4d827a49629c41b499303355ed
 
     - name: Decompress memtest
-      command: gunzip --keep /home/vagrant/memtest86+-5.01.bin.gz creates=/home/vagrant/memtest86+-5.01.bin
+      command:
+        gunzip --keep /home/vagrant/memtest86+-5.01.bin.gz
+        creates=/home/vagrant/memtest86+-5.01.bin
 
     - name: Make memtest available for boot
       copy:
@@ -59,7 +65,9 @@
 
     # Setup Install disk
     - name: Create mount directories
-      file: state=directory path={{ isos_mount_directory }}/{{ item.name }}
+      file:
+        state=directory
+        path={{ isos_mount_directory }}/{{ item.name }}
       with_items: "{{ install_isos }}"
 
     - name: Download install isos
@@ -81,7 +89,6 @@
       file: state=directory path={{ tftp_boot_root }}/{{ item.name }}
       with_items: "{{ install_isos }}"
 
-
     - name: Copy boot files for isos
       copy: remote_src=yes src={{ isos_mount_directory }}/{{ item.0.name }}/{{ item.1 }} dest={{ tftp_boot_root }}/{{ item.0.name}}
       with_subelements:
@@ -100,13 +107,18 @@
       template: src=templates/etc/init/kickstart.conf dest=/etc/init/kickstart.conf
 
     - name: Install kickstart app data
-      copy: dest={{ kickstart_wsgi_app_dir }}/host_vars.yml content="{{ kickstart_host_vars | to_nice_yaml }}"
+      copy:
+        dest={{ kickstart_wsgi_app_dir }}/host_vars.yml
+      args:
+        content="{{ kickstart_host_vars | to_nice_yaml }}"
 
     - name: Copy kickstart template files
       copy: src=files/srv/kickstart/templates dest={{ kickstart_wsgi_app_dir }}/
 
     # Setup Nginx to serve the install disk and kickstart
-    - template: src=templates/etc/nginx/sites-available/network-install.conf dest=/etc/nginx/sites-available/
+    - template:
+        src=templates/etc/nginx/sites-available/network-install.conf
+        dest=/etc/nginx/sites-available/
       notify: Restart nginx
 
     - file: state=link src=../sites-available/network-install.conf path=/etc/nginx/sites-enabled/network-install.conf
