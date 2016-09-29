@@ -109,8 +109,7 @@
     - name: Install kickstart app data
       copy:
         dest={{ kickstart_wsgi_app_dir }}/host_vars.yml
-      args:
-        content="{{ kickstart_host_vars | to_nice_yaml }}"
+        content={{ kickstart_host_vars | to_nice_yaml }}
 
     - name: Copy kickstart template files
       copy: src=files/srv/kickstart/templates dest={{ kickstart_wsgi_app_dir }}/
