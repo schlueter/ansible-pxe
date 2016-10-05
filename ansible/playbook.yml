@@ -19,20 +19,17 @@
         - syslinux
         - syslogd
 
-    - template: dest=/etc/ src=templates/etc/dnsmasq.conf
+    # Configure Dnsmasq
+    - name: Configure Dnsmasq with /etc/dnsmasq.conf
+      template: src=templates/etc/dnsmasq.conf dest=/etc/
       notify: Restart dnsmasq
 
-    - get_url:
-        dest=/srv/
-        url=http://mirror.lug.udel.edu/pub/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso
-
-    - mount:
-        name=/mnt
-        src=/srv/CentOS-7-x86_64-Minimal-1511.iso
-        fstype=iso9660
-        state=mounted
-
+    # Setup PXE
     - file: state=directory path=/var/lib/tftpboot/pxelinux.cfg/
+
+    - copy: src=r29.png dest=/var/lib/tftpboot/
+    - shell: cp /usr/lib/syslinux/pxelinux.0 /var/lib/tftpboot/
+    - shell: cp /usr/lib/syslinux/vesamenu.c32 /var/lib/tftpboot/
 
     - copy: dest=/var/lib/tftpboot/pxelinux.cfg/default
       args:
@@ -53,38 +50,27 @@
           label local
             menu label ^3) Boot from local drive
 
-    - copy: dest=/var/lib/tftpboot/centos7-ks.cfg
-      args:
-        content: |
-          auth --passalgo=sha512
-          autostep
-          bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda
-          text
-          install
-          keyboard --vckeymap=us --xlayouts='us'
-          lang en_US.UTF-8
-          logging --host={{ kickstart_logging_host }} --level info
-          network --activate --bootproto=dhcp --device=enp11s0 --ipv6=auto --activate
-          reboot
-          rootpw --iscrypted $6$PlqMCtdIFl7gP4nH$fS1/2/BKGTA4Rw7rns/p.cStNzQFKuaRXPvhNbJjiL7hbo8YFyabNqFKCbOz.ZsH8/5iUiE7Bo67RiLgAniBU/
-          selinux --disabled
-          skipx
-          timezone America/New_York --isUtc
-          url --url={{ kickstart_url }}
-          %packages
-          @^minimal
-          @core
-          kexec-tools
-          %end
-          %addon com_redhat_kdump --enable --reserve-mb='auto'
-          %end
+    # Setup Kickstart file for Centos install
+    - name: Install Centos Kickstart file
+      template: src=templates/var/lib/tftpboot/centos7-ks.cfg dest=/var/lib/tftpboot/
 
-    - copy: src=r29.png dest=/var/lib/tftpboot/
+    # Setup Install disk
+    - name: Download Centos install disk
+      get_url:
+        dest=/srv/
+        url=http://mirror.lug.udel.edu/pub/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso
+        checksum=sha256:f90e4d28fa377669b2db16cbcb451fcb9a89d2460e3645993e30e137ac37d284
+
+    - name: Mount Centos install disk
+      mount:
+        name=/mnt
+        src=/srv/CentOS-7-x86_64-Minimal-1511.iso
+        fstype=iso9660
+        state=mounted
 
     - shell: cp -R /mnt/* /var/lib/tftpboot/
-    - shell: cp /usr/lib/syslinux/pxelinux.0 /var/lib/tftpboot/
-    - shell: cp /usr/lib/syslinux/vesamenu.c32 /var/lib/tftpboot/
 
+    # Setup Nginx to serve the install disk
     - copy: dest=/etc/nginx/sites-available/pxe
       args:
         content: |
@@ -100,8 +86,6 @@
 
     - file: state=absent path=/etc/nginx/sites-enabled/default
       notify: Restart nginx
-
-    - file: state=directory path=/srv/pxe
 
   handlers:
     - name: Restart dnsmasq
