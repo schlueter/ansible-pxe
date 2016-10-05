@@ -1,7 +1,17 @@
 ---
 - hosts: all
   gather_facts: yes
-  pre_tasks:
+  vars:
+    dnsmasq_interface: eth1
+    dnsmasq_dhcp_range: 192.168.42.10,192.168.42.20
+    dnsmasq_router: 192.168.42.1
+    dnsmasq_server: 8.8.8.8
+    dnsmasq_only_known_hosts: no
+    dnsmasq_hosts: []
+    pxe_kickstart_host: 192.168.42.2
+    kickstart_url: http://192.168.42.2
+    kickstart_logging_host: 192.168.42.2
+  tasks:
     - apt: update_cache=yes state=latest name='{{ item }}'
       with_items:
         - dnsmasq
@@ -9,27 +19,16 @@
         - syslinux
         - syslogd
 
-    - copy: dest=/etc/resolv.dnsmasq.conf
-      args:
-        content: |
-          nameserver 8.8.8.8
+    - template: dest=/etc/ src=templates/etc/dnsmasq.conf
       notify: Restart dnsmasq
 
-    - copy: dest=/etc/dnsmasq.conf
-      args:
-        content: |
-          interface=eth1
-          dhcp-range=192.168.42.10,192.168.42.20
-          dhcp-option=option:router,192.168.42.1
-          dhcp-boot=pxelinux.0
-          enable-tftp
-          tftp-root=/var/lib/tftpboot
-          server=8.8.8.8
-      notify: Restart dnsmasq
+    - get_url:
+        dest=/srv/
+        url=http://mirror.lug.udel.edu/pub/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso
 
     - mount:
         name=/mnt
-        src=/vagrant/CentOS-7-x86_64-Minimal-1511.iso
+        src=/srv/CentOS-7-x86_64-Minimal-1511.iso
         fstype=iso9660
         state=mounted
 
@@ -42,18 +41,15 @@
           prompt 0
           timeout 50
           menu title ########## PXE Boot Menu ##########
-          menu background r29.png
-          menu autoboot Gonna do that thing in #
-          menu tabmsg Pick a thing
           menu color screen 47 FFFFFFFF FFFFFFFF std
           label Centos 7 Kickstart install
             menu label ^1) Install CentOS 7 x64 from Kickstart
             kernel isolinux/vmlinuz
-            append initrd=isolinux/initrd.img ks=http://192.168.42.2/centos7-ks.cfg
+            append initrd=isolinux/initrd.img ks=http://{{ pxe_kickstart_host }}/centos7-ks.cfg
           label Centos 7 Gui install
             menu label ^2) Install CentOS 7 x64 with Local Repo
             kernel isolinux/vmlinuz
-            append initrd=isolinux/initrd.img method=http://192.168.42.2/ devfs=nomount
+            append initrd=isolinux/initrd.img method=http://{{ pxe_kickstart_host }}/ devfs=nomount
           label local
             menu label ^3) Boot from local drive
 
@@ -67,15 +63,14 @@
           install
           keyboard --vckeymap=us --xlayouts='us'
           lang en_US.UTF-8
-          logging --host=192.168.42.2 --level info
-          network --bootproto=dhcp --device=enp0s8 --ipv6=auto --activate
-          network --hostname=localhost.localdomain
+          logging --host={{ kickstart_logging_host }} --level info
+          network --activate --bootproto=dhcp --device=enp11s0 --ipv6=auto --activate
           reboot
           rootpw --iscrypted $6$PlqMCtdIFl7gP4nH$fS1/2/BKGTA4Rw7rns/p.cStNzQFKuaRXPvhNbJjiL7hbo8YFyabNqFKCbOz.ZsH8/5iUiE7Bo67RiLgAniBU/
           selinux --disabled
           skipx
           timezone America/New_York --isUtc
-          url --url="http://192.168.42.2/"
+          url --url={{ kickstart_url }}
           %packages
           @^minimal
           @core
@@ -96,7 +91,7 @@
           server {
             listen   80;
             root /var/lib/tftpboot;
-            server_name localhost pxe.local.rf29.net;
+            server_name localhost;
           }
       notify: Restart nginx
 
