@@ -1,16 +1,6 @@
 ---
 - hosts: all
   gather_facts: yes
-  vars:
-    dnsmasq_interface: eth1
-    dnsmasq_dhcp_range: 192.168.42.10,192.168.42.20
-    dnsmasq_router: 192.168.42.1
-    dnsmasq_server: 8.8.8.8
-    dnsmasq_only_known_hosts: no
-    dnsmasq_hosts: []
-    pxe_kickstart_host: 192.168.42.2
-    kickstart_url: http://192.168.42.2
-    kickstart_logging_host: 192.168.42.2
   tasks:
     - apt: update_cache=yes state=latest name='{{ item }}'
       with_items:
@@ -28,8 +18,8 @@
     - file: state=directory path=/var/lib/tftpboot/pxelinux.cfg/
 
     - copy: src=r29.png dest=/var/lib/tftpboot/
-    - shell: cp /usr/lib/syslinux/pxelinux.0 /var/lib/tftpboot/
-    - shell: cp /usr/lib/syslinux/vesamenu.c32 /var/lib/tftpboot/
+    - shell: cp /usr/lib/syslinux/pxelinux.0 /var/lib/tftpboot/ creates=/var/lib/tftpboot/pxelinux.0
+    - shell: cp /usr/lib/syslinux/vesamenu.c32 /var/lib/tftpboot/ creates=/var/lib/tftpboot/vesamenu.c32
 
     - template: src=templates/var/lib/tftpboot/pxelinux.cfg/default dest=/var/lib/tftpboot/pxelinux.cfg/
 
@@ -40,9 +30,10 @@
     # Setup Install disk
     - name: Download Centos install disk
       get_url:
-        dest=/srv/
+        dest=/srv/CentOS-7-x86_64-Minimal-1511.iso
         url=http://mirror.lug.udel.edu/pub/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso
-        checksum=sha256:f90e4d28fa377669b2db16cbcb451fcb9a89d2460e3645993e30e137ac37d284
+        checksum=md5:88c0437f0a14c6e2c94426df9d43cd67
+        backup=yes
 
     - name: Mount Centos install disk
       mount:
