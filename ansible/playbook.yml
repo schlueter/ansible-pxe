@@ -4,6 +4,7 @@
   vars:
     network_install_http_root: /srv/network-install
     tftp_boot_root: /var/lib/tftpboot
+    kickstart_wsgi_app: /srv/kickstart/app.py
   tasks:
     - apt: update_cache=yes state=latest name='{{ item }}'
       with_items:
@@ -11,6 +12,8 @@
         - nginx
         - syslinux
         - syslogd
+        - uwsgi
+        - uwsgi-plugin-python
 
     # Configure Dnsmasq
     - name: Configure Dnsmasq with /etc/dnsmasq.conf
@@ -59,6 +62,13 @@
       template: src=templates/{{ tftp_boot_root }}/centos7-ks.cfg dest={{ network_install_http_root }}
 
     # Setup wsgi app to serve kickstart files
+    - name: Make app dir
+      file: state=directory path=/srv/kickstart/
+
+    - name: Install python wsgi app
+      template: src=templates/{{ kickstart_wsgi_app }} dest={{ kickstart_wsgi_app }}
+      notify: Restart kickstart app
+
     - name: Install upstart script
       template: src=templates/etc/init/kickstart.conf dest=/etc/init/kickstart.conf
 
@@ -74,6 +84,10 @@
 
   handlers:
     - name: Restart dnsmasq
-      service:  name=dnsmasq state=restarted
+      service:  name=dnsmasq state=restarted enabled=yes
+
     - name: Restart nginx
-      service: name=nginx state=restarted
+      service: name=nginx state=restarted enabled=yes
+
+    - name: Restart kickstart app
+      service: name=kickstart state=restarted enabled=yes
