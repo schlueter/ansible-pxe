@@ -19,7 +19,7 @@ Vagrant.configure("2") do |config|
       kickstart_url: "http://#{IP_ADDR}",
       kickstart_logging_host: IP_ADDR,
       kickstart_hostname: 'target.pxe.local',
-      kickstart_install_drive: '/dev/disk/by-id/ata-VBOX_HARDDISK_VB96002301-ea75998c',
+      kickstart_install_drive: '/dev/disk/by-path/pci-0000:00:01.1-ata-1.0',
       kickstart_networks: [{
         device: 'enp0s3',
         bootproto: 'static',

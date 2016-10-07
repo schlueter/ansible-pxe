@@ -28,6 +28,9 @@
       template: src=templates/var/lib/tftpboot/centos7-ks.cfg dest=/var/lib/tftpboot/
 
     # Setup Install disk
+    - name: Create install directory
+      file: state=directory path=/srv/install-disks/CentOS-7-x86_64-Minimal-1511
+
     - name: Download Centos install disk
       get_url:
         dest=/srv/CentOS-7-x86_64-Minimal-1511.iso
@@ -42,7 +45,7 @@
         fstype=iso9660
         state=mounted
 
-    - shell: cp -R /mnt/* /var/lib/tftpboot/
+    - shell: cp -R /mnt/* /srv/install-disks/CentOS-7-x86_64-Minimal-1511
 
     # Setup Nginx to serve the install disk
     - copy: dest=/etc/nginx/sites-available/pxe
@@ -50,7 +53,7 @@
         content: |
           server {
             listen   80;
-            root /var/lib/tftpboot;
+            root /srv/install-disks;
             server_name localhost;
           }
       notify: Restart nginx
