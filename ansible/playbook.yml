@@ -1,6 +1,9 @@
 ---
 - hosts: all
   gather_facts: yes
+  vars:
+    network_install_http_root: /srv/network-install
+    tftp_boot_root: /var/lib/tftpboot
   tasks:
     - apt: update_cache=yes state=latest name='{{ item }}'
       with_items:
@@ -15,21 +18,17 @@
       notify: Restart dnsmasq
 
     # Setup PXE
-    - file: state=directory path=/var/lib/tftpboot/pxelinux.cfg/
+    - file: state=directory path={{ tftp_boot_root }}/pxelinux.cfg/
 
-    - copy: src=r29.png dest=/var/lib/tftpboot/
-    - shell: cp /usr/lib/syslinux/pxelinux.0 /var/lib/tftpboot/ creates=/var/lib/tftpboot/pxelinux.0
-    - shell: cp /usr/lib/syslinux/vesamenu.c32 /var/lib/tftpboot/ creates=/var/lib/tftpboot/vesamenu.c32
+    - copy: src=r29.png dest={{ tftp_boot_root }}/
+    - shell: cp /usr/lib/syslinux/pxelinux.0 {{ tftp_boot_root }}/ creates={{ tftp_boot_root }}/pxelinux.0
+    - shell: cp /usr/lib/syslinux/vesamenu.c32 {{ tftp_boot_root }}/ creates={{ tftp_boot_root }}/vesamenu.c32
 
-    - template: src=templates/var/lib/tftpboot/pxelinux.cfg/default dest=/var/lib/tftpboot/pxelinux.cfg/
-
-    # Setup Kickstart file for Centos install
-    - name: Install Centos Kickstart file
-      template: src=templates/var/lib/tftpboot/centos7-ks.cfg dest=/var/lib/tftpboot/
+    - template: src=templates/var/lib/tftpboot/pxelinux.cfg/default dest={{ tftp_boot_root }}/pxelinux.cfg/
 
     # Setup Install disk
     - name: Create install directory
-      file: state=directory path=/srv/install-disks/CentOS-7-x86_64-Minimal-1511
+      file: state=directory path={{ network_install_http_root }}/CentOS-7-x86_64-Minimal-1511
 
     - name: Download Centos install disk
       get_url:
@@ -45,20 +44,29 @@
         fstype=iso9660
         state=mounted
 
-    - shell: cp -R /mnt/* /srv/install-disks/CentOS-7-x86_64-Minimal-1511
+    - name: Copy installation files
+      shell: cp -R /mnt/* {{ network_install_http_root }}/CentOS-7-x86_64-Minimal-1511
 
-    # Setup Nginx to serve the install disk
-    - copy: dest=/etc/nginx/sites-available/pxe
-      args:
-        content: |
-          server {
-            listen   80;
-            root /srv/install-disks;
-            server_name localhost;
-          }
+    - name: Make Centos7 tftp boot dir
+      file: state=directory path={{ tftp_boot_root }}/centos7/
+
+    - name: Copy boot files
+      shell: cp /mnt/isolinux/{{ item }} {{ tftp_boot_root }}/centos7
+      with_items: [ vmlinuz, initrd.img ]
+
+    # Setup Kickstart file for Centos install
+    - name: Install Centos Kickstart file
+      template: src=templates/{{ tftp_boot_root }}/centos7-ks.cfg dest={{ network_install_http_root }}
+
+    # Setup wsgi app to serve kickstart files
+    - name: Install upstart script
+      template: src=templates/etc/init/kickstart.conf dest=/etc/init/kickstart.conf
+
+    # Setup Nginx to serve the install disk and kickstart
+    - template: src=templates/etc/nginx/sites-available/network-install.conf dest=/etc/nginx/sites-available/
       notify: Restart nginx
 
-    - file: state=link src=../sites-available/pxe path=/etc/nginx/sites-enabled/pxe
+    - file: state=link src=../sites-available/network-install.conf path=/etc/nginx/sites-enabled/network-install.conf
       notify: Restart nginx
 
     - file: state=absent path=/etc/nginx/sites-enabled/default
