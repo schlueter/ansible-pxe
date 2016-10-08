@@ -6,10 +6,10 @@ menu color screen 47 FFFFFFFF FFFFFFFF std
 label Centos 7 Kickstart install
   menu label ^1) Install CentOS 7 x64 from Kickstart
   kernel centos7/vmlinuz
-  append initrd=centos7/initrd.img ks=http://{{ pxe_kickstart_host }}/centos7-ks.cfg
+  append initrd=centos7/initrd.img ks=http://{{ pxe_kickstart_host }}/kickstart?centos7
 label Centos 7 Gui install
   menu label ^2) Install CentOS 7 x64 with Local Repo
   kernel centos7/vmlinuz
-  append initrd=centos7/initrd.img method=http://{{ pxe_kickstart_host }}/ devfs=nomount
+  append initrd=centos7/initrd.img method=http://{{ pxe_kickstart_host }}/CentOS-7-x86_64-Minimal-1511 devfs=nomount
 label local
   menu label ^3) Boot from local drive

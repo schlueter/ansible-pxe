@@ -1,33 +1,30 @@
 autostep
-url --url={{ kickstart_url }}/CentOS-7-x86_64-Minimal-1511
-logging --host={{ kickstart_logging_host }} --level info
+url --url={{ server.url }}/CentOS-7-x86_64-Minimal-1511
 firstboot --disable
 install
 text
 
 keyboard --vckeymap=us --xlayouts='us'
 lang en_US.UTF-8
+timezone America/New_York --isUtc
 
 auth --passalgo=sha512
 selinux --disabled
 rootpw deathbysexyr29
 
-timezone America/New_York --isUtc
-{% for network in kickstart_networks | default([]) %}
-network --device={{ network.device }} --bootproto={{ network.bootproto }}{% if network.ip | default(False) %} --ip={{ network.ip }}{% endif %}{% if network.gateway | default(False) %} --gateway={{ network.gateway }}{% endif %}{% if network.netmask | default(False) %} --netmask={{ network.netmask }}{% endif %}{% if network.netmask | default(False) %} --netmask={{ network.netmask }}{% endif %}{% if network.bridgeslaves | default(False) %} --bridgeslaves={{ network.bridgeslaves }}{% endif %}
-
+{% for network in target.networks | default([]) %}
+network --device={{ network.device }} --bootproto={{ network.bootproto }}{% if network.ip | default(False) %} --ip={{ network.ip }}{% endif %}{% if network.gateway | default(False) %} --gateway={{ network.gateway }}{% endif %}{% if network.netmask | default(False) %} --netmask={{ network.netmask }}{% endif %}{% if network.bridgeslaves | default(False) %} --bridgeslaves={{ network.bridgeslaves }}{% endif %}
 {% endfor %}
-
-network  --hostname={{ kickstart_hostname }}
+network --hostname={{ target.hostname }}
 
 zerombr
 clearpart --all
-part /boot --fstype xfs --size=512 --ondisk={{ kickstart_install_drive }}
-part pv.01 --size 1 --grow --ondisk={{ kickstart_install_drive }}
+part /boot --fstype xfs --size=512 --ondisk={{ target.install_drive }}
+part pv.01 --size 1 --grow --ondisk={{ target.install_drive }}
 volgroup VG pv.01
 logvol swap --name=LV_SWAP --fstype=swap --vgname=VG --recommended
 logvol /    --name=LV_ROOT --fstype=xfs --vgname=VG --size=1 --grow
-bootloader --append=" crashkernel=auto" --location=mbr --boot-drive={{ kickstart_install_drive }}
+bootloader --append=" crashkernel=auto" --location=mbr --boot-drive={{ target.install_drive }}
 
 skipx
 reboot

@@ -6,11 +6,6 @@
     tftp_boot_root: /var/lib/tftpboot
     kickstart_wsgi_app_dir: /srv/kickstart/
     kickstart_wsgi_app: "{{ kickstart_wsgi_app_dir }}/app.py"
-    kickstart_host_vars:
-      192.168.42.1:
-        nothing: nothing to see
-      127.0.0.1:
-        nothing: really, nothing to see
   tasks:
     - apt: update_cache=yes state=latest name='{{ item }}' cache_valid_time=20000
       with_items:
@@ -20,6 +15,8 @@
         - syslogd
         - uwsgi
         - uwsgi-plugin-python
+        - python-jinja2
+        - python-yaml
 
     # Configure Dnsmasq
     - name: Configure Dnsmasq with /etc/dnsmasq.conf
@@ -64,10 +61,6 @@
     - name: Copy boot files
       shell: cp /mnt/isolinux/{{ item }} {{ tftp_boot_root }}/centos7
       with_items: [ vmlinuz, initrd.img ]
-
-    # Setup Kickstart file for Centos install
-    - name: Install Centos Kickstart file
-      template: src=templates/{{ tftp_boot_root }}/centos7-ks.cfg dest={{ network_install_http_root }}
 
     # Setup wsgi app to serve kickstart files
     - name: Make app dir

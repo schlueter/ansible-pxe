@@ -16,7 +16,7 @@ class TemplateNotFound(Exception):
 class HostVarsNotFound(Exception):
     pass
 
-def get_requestor_vars(requestor_ip):
+def get_system_vars(requestor_ip):
     try:
         host_vars = yaml.load(open(HOST_VARS)).get(requestor_ip)
     except:
@@ -40,13 +40,14 @@ def get_named_template(name):
     return template
 
 def kickstart_template(template_name=None, requestor_ip=None):
-    variables = get_requestor_vars(requestor_ip)
+    requestor_variables = get_system_vars(requestor_ip)
+    server_variables = get_system_vars('server')
     template = get_named_template(template_name)
-    return Template(template).render(**variables)
+    return Template(template).render(server=server_variables, target=requestor_variables)
 
 def application(env, start_response):
     try:
-        response = '# Generated kickstart file for {} from {}\n\n{}\n'.format(
+        response = '# Generated kickstart file for {} from {}\n{}\n'.format(
             env['REMOTE_ADDR'],
             env['QUERY_STRING'],
             kickstart_template(template_name=env['QUERY_STRING'], requestor_ip=env['REMOTE_ADDR'])
@@ -63,4 +64,4 @@ if __name__ == '__main__':
     def start_response_mock(text, headers):
         print text
         print headers
-    print  '\n{}'.format(application(yaml.load(sys.argv[1]), start_response_mock))
+    print  '\n{}'.format(application(yaml.load(sys.argv[1]), start_response_mock)[0])
