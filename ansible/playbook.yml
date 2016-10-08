@@ -4,7 +4,13 @@
   vars:
     network_install_http_root: /srv/network-install
     tftp_boot_root: /var/lib/tftpboot
-    kickstart_wsgi_app: /srv/kickstart/app.py
+    kickstart_wsgi_app_dir: /srv/kickstart/
+    kickstart_wsgi_app: "{{ kickstart_wsgi_app_dir }}/app.py"
+    kickstart_host_vars:
+      192.168.42.1:
+        nothing: nothing to see
+      127.0.0.1:
+        nothing: really, nothing to see
   tasks:
     - apt: update_cache=yes state=latest name='{{ item }}' cache_valid_time=20000
       with_items:
@@ -30,6 +36,7 @@
     - template: src=templates/var/lib/tftpboot/pxelinux.cfg/default dest={{ tftp_boot_root }}/pxelinux.cfg/
 
     # Setup Install disk
+    # TODO make this all target agnostic
     - name: Create install directory
       file: state=directory path={{ network_install_http_root }}/CentOS-7-x86_64-Minimal-1511
 
@@ -50,8 +57,9 @@
     - name: Copy installation files
       shell: cp -R /mnt/* {{ network_install_http_root }}/CentOS-7-x86_64-Minimal-1511
 
-    - name: Make Centos7 tftp boot dir
-      file: state=directory path={{ tftp_boot_root }}/centos7/
+    - name: Make distros' tftp boot dirs
+      file: state=directory path={{ item }}
+      with_items: [ "{{ tftp_boot_root }}/centos7/" ]
 
     - name: Copy boot files
       shell: cp /mnt/isolinux/{{ item }} {{ tftp_boot_root }}/centos7
@@ -71,6 +79,12 @@
 
     - name: Install upstart script
       template: src=templates/etc/init/kickstart.conf dest=/etc/init/kickstart.conf
+
+    - name: Install kickstart app data
+      copy: dest={{ kickstart_wsgi_app_dir }}/host_vars.yml content="{{ kickstart_host_vars | to_nice_yaml }}"
+
+    - name: Copy kickstart template files
+      copy: src=files/srv/kickstart/templates dest={{ kickstart_wsgi_app_dir }}
 
     # Setup Nginx to serve the install disk and kickstart
     - template: src=templates/etc/nginx/sites-available/network-install.conf dest=/etc/nginx/sites-available/
