@@ -6,7 +6,7 @@
     tftp_boot_root: /var/lib/tftpboot
     kickstart_wsgi_app: /srv/kickstart/app.py
   tasks:
-    - apt: update_cache=yes state=latest name='{{ item }}'
+    - apt: update_cache=yes state=latest name='{{ item }}' cache_valid_time=20000
       with_items:
         - dnsmasq
         - nginx
