@@ -1,15 +1,33 @@
 default vesamenu.c32
-prompt 0
 timeout 30
-menu title PXE Boot Menu
+menu title R29 PXE Menu
+menu background r29.jpg
+menu resolution 640 400
+menu width 40
+menu margin 0
+menu rows 5
+menu hshift 8
+menu vshift 2
+
 label Centos 7 Kickstart install
   menu label ^1) Kickstart CentOS 7 x64 install
   kernel centos7/vmlinuz
-  append initrd=centos7/initrd.img ks=http://{{ pxe_kickstart_host }}/kickstart?centos7
+  append initrd=centos7/initrd.img ks=http://192.168.42.2/kickstart?centos7
+
 label Centos 7 Manual install
   menu label ^2) Manual CentOS 7 x64 install
   kernel centos7/vmlinuz
-  append initrd=centos7/initrd.img method=http://{{ pxe_kickstart_host }}/CentOS-7-x86_64-Minimal-1511 devfs=nomount
+  append initrd=centos7/initrd.img method=http://192.168.42.2/CentOS-7-x86_64-Minimal-1511 devfs=nomount
+
 label Memtest
   menu label ^3) Memtest
   kernel memtest/memtest
+
+label cold_reboot
+  menu label ^4) Cold reboot
+  com32 reboot.c32
+
+label warm_reboot
+  menu label ^5) Warm reboot
+  com32 reboot.c32
+  append --warm

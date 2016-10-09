@@ -31,10 +31,12 @@
         - pxelinux.cfg
         - memtest
 
-    # - copy: src=r29.png dest={{ tftp_boot_root }}/
+    - name: Install image for pxe menu background
+      copy: src=r29.jpg dest={{ tftp_boot_root }}/
+
     - name: Copy pxe files from syslinux
       copy: remote_src=yes src=/usr/lib/syslinux/{{ item }} dest={{ tftp_boot_root }}/
-      with_items: [ pxelinux.0, vesamenu.c32 ]
+      with_items: [ pxelinux.0, vesamenu.c32, reboot.c32 ]
 
     - template: src=templates/var/lib/tftpboot/pxelinux.cfg/default dest={{ tftp_boot_root }}/pxelinux.cfg/
 

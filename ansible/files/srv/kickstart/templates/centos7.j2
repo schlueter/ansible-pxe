@@ -30,13 +30,10 @@ skipx
 reboot
 %packages --nobase
 @core --nodefaults
--iwl*firmware
--btrfs-progs*
--e2fsprogs*
 -aic94xx-firmware*
--parted*
 -alsa*
--wpa_supplicant
+-iwl*firmware
+-wpa_supplicant*
 %end
 %addon com_redhat_kdump --enable --reserve-mb='auto'
 %end
