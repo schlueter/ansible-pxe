@@ -21,7 +21,9 @@ Vagrant.configure("2") do |config|
         server: { url: "http://#{IP_ADDR}" },
         '192.168.42.102' => {
           hostname: 'target.pxe.local',
-          install_drive: '/dev/disk/by-path/pci-0000:00:01.1-ata-1.0',
+          # usually this is better
+          # install_drive: '/dev/disk/by-path/pci-0000:00:01.1-ata-1.0',
+          install_drive: '/dev/sda',
           networks: [{
             device: 'enp0s3',
             bootproto: 'static',
