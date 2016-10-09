@@ -28,10 +28,15 @@ bootloader --append=" crashkernel=auto" --location=mbr --boot-drive={{ target.in
 
 skipx
 reboot
-%packages
-@^minimal
-@core
-kexec-tools
+%packages --nobase
+@core --nodefaults
+-iwl*firmware
+-btrfs-progs*
+-e2fsprogs*
+-aic94xx-firmware*
+-parted*
+-alsa*
+-wpa_supplicant
 %end
 %addon com_redhat_kdump --enable --reserve-mb='auto'
 %end

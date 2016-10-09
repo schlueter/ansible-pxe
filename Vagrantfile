@@ -4,7 +4,8 @@ Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/trusty64"
   config.vm.hostname = HOSTNAME
   config.vm.network :private_network, ip: IP_ADDR
-  config.vm.provision :file, source: "~/Downloads/CentOS-7-x86_64-Minimal-1511.iso", destination: "/srv/CentOS-7-x86_64-Minimal-1511.iso"
+  config.vm.provision :file, source: "~/Downloads/CentOS-7-x86_64-Minimal-1511.iso", destination: "/home/vagrant/CentOS-7-x86_64-Minimal-1511.iso"
+  config.vm.provision :file, source: "~/Downloads/memtest86+-5.01.bin.gz", destination: "/home/vagrant/memtest86+-5.01.bin.gz"
   config.vm.provision :ansible,
     playbook: 'ansible/playbook.yml',
     sudo: true,

@@ -24,13 +24,34 @@
       notify: Restart dnsmasq
 
     # Setup PXE
-    - file: state=directory path={{ tftp_boot_root }}/pxelinux.cfg/
+    - name: Make distros' tftp boot dirs
+      file: state=directory path={{ tftp_boot_root }}/{{ item }}/
+      with_items:
+        - centos7
+        - pxelinux.cfg
+        - memtest
 
-    - copy: src=r29.png dest={{ tftp_boot_root }}/
-    - shell: cp /usr/lib/syslinux/pxelinux.0 {{ tftp_boot_root }}/ creates={{ tftp_boot_root }}/pxelinux.0
-    - shell: cp /usr/lib/syslinux/vesamenu.c32 {{ tftp_boot_root }}/ creates={{ tftp_boot_root }}/vesamenu.c32
+    # - copy: src=r29.png dest={{ tftp_boot_root }}/
+    - name: Copy pxe files from syslinux
+      copy: remote_src=yes src=/usr/lib/syslinux/{{ item }} dest={{ tftp_boot_root }}/
+      with_items: [ pxelinux.0, vesamenu.c32 ]
 
     - template: src=templates/var/lib/tftpboot/pxelinux.cfg/default dest={{ tftp_boot_root }}/pxelinux.cfg/
+
+    - name: Download Memtest
+      get_url:
+        dest=/home/vagrant/memtest86+-5.01.bin.gz
+        url=http://www.memtest.org/download/5.01/memtest86+-5.01.bin.gz
+        checksum=md5:14ec4c4d827a49629c41b499303355ed
+
+    - name: Decompress memtest
+      command: gunzip --keep /home/vagrant/memtest86+-5.01.bin.gz creates=/home/vagrant/memtest86+-5.01.bin
+
+    - name: Make memtest available for boot
+      copy:
+        src=/home/vagrant/memtest86+-5.01.bin
+        dest={{ tftp_boot_root }}/memtest/memtest
+        remote_src=yes
 
     # Setup Install disk
     # TODO make this all target agnostic
@@ -39,27 +60,19 @@
 
     - name: Download Centos install disk
       get_url:
-        dest=/srv/CentOS-7-x86_64-Minimal-1511.iso
+        dest=/home/vagrant/CentOS-7-x86_64-Minimal-1511.iso
         url=http://mirror.lug.udel.edu/pub/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso
         checksum=md5:88c0437f0a14c6e2c94426df9d43cd67
-        backup=yes
 
     - name: Mount Centos install disk
       mount:
-        name=/mnt
-        src=/srv/CentOS-7-x86_64-Minimal-1511.iso
+        name=/mnt/CentOS-7-x86_64-Minimal-1511
+        src=/home/vagrant/CentOS-7-x86_64-Minimal-1511.iso
         fstype=iso9660
         state=mounted
 
-    - name: Copy installation files
-      shell: cp -R /mnt/* {{ network_install_http_root }}/CentOS-7-x86_64-Minimal-1511
-
-    - name: Make distros' tftp boot dirs
-      file: state=directory path={{ item }}
-      with_items: [ "{{ tftp_boot_root }}/centos7/" ]
-
-    - name: Copy boot files
-      shell: cp /mnt/isolinux/{{ item }} {{ tftp_boot_root }}/centos7
+    - name: Copy boot files for distros
+      copy: remote_src=yes src=/mnt/CentOS-7-x86_64-Minimal-1511/isolinux/{{ item }} dest={{ tftp_boot_root }}/centos7/
       with_items: [ vmlinuz, initrd.img ]
 
     # Setup wsgi app to serve kickstart files
