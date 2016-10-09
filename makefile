@@ -4,7 +4,7 @@ TARGET_VM=$(shell if [ -f pxe_target_name ] ; then cat pxe_target_name; else ech
 SHARED_NETWORK=$(shell VBoxManage showvminfo $$(cat .vagrant/machines/default/virtualbox/id) | sed -n "s/^.*Host-only\ Interface\ \'\(.*\)\'.*/\1/p")
 
 edit:
-	find . -type f -not \( -name *.jpg -o -name '*.vdi' -o -name *.retry -o -regex .*git.* -o -regex .*\.vagrant.* \) -exec vim {} +
+	find . -type f -not \( -name pxe_target_name -o -name *.jpg -o -name '*.vdi' -o -name *.retry -o -regex .*git.* -o -regex .*\.vagrant.* \) -exec vim {} +
 
 test: | create_server create_target
 

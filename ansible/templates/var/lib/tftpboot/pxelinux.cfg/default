@@ -9,15 +9,15 @@ menu rows 5
 menu hshift 8
 menu vshift 2
 
-label Centos 7 Kickstart install
-  menu label ^1) Kickstart CentOS 7 x64 install
+label CentOS-7-x86_64-Minimal-1511 Kickstart install
+  menu label ^1) Kickstart CentOS-7-x86_64-Minimal-1511 install
   kernel centos7/vmlinuz
   append initrd=centos7/initrd.img ks=http://192.168.42.2/kickstart?centos7
 
-label Centos 7 Manual install
-  menu label ^2) Manual CentOS 7 x64 install
+label CentOS-7-x86_64-Minimal-1511 Manual install
+  menu label ^2) Manual CentOS-7-x86_64-Minimal-1511 install
   kernel centos7/vmlinuz
-  append initrd=centos7/initrd.img method=http://192.168.42.2/CentOS-7-x86_64-Minimal-1511 devfs=nomount
+  append initrd=centos7/initrd.img method=http://192.168.42.2/isos/CentOS-7-x86_64-Minimal-1511 devfs=nomount
 
 label Memtest
   menu label ^3) Memtest

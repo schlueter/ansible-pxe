@@ -4,6 +4,7 @@
   vars:
     network_install_http_root: /srv/network-install
     tftp_boot_root: /var/lib/tftpboot
+    isos_mount_directory: /mnt/isos
     kickstart_wsgi_app_dir: /srv/kickstart/
     kickstart_wsgi_app: "{{ kickstart_wsgi_app_dir }}/app.py"
   tasks:
@@ -57,8 +58,8 @@
 
     # Setup Install disk
     # TODO make this all target agnostic
-    - name: Create install directory
-      file: state=directory path={{ network_install_http_root }}/CentOS-7-x86_64-Minimal-1511
+    - name: Create mount directory
+      file: state=directory path={{ isos_mount_directory }}/CentOS-7-x86_64-Minimal-1511
 
     - name: Download Centos install disk
       get_url:
@@ -68,13 +69,13 @@
 
     - name: Mount Centos install disk
       mount:
-        name=/mnt/CentOS-7-x86_64-Minimal-1511
+        name={{ isos_mount_directory }}/CentOS-7-x86_64-Minimal-1511
         src=/home/vagrant/CentOS-7-x86_64-Minimal-1511.iso
         fstype=iso9660
         state=mounted
 
     - name: Copy boot files for distros
-      copy: remote_src=yes src=/mnt/CentOS-7-x86_64-Minimal-1511/isolinux/{{ item }} dest={{ tftp_boot_root }}/centos7/
+      copy: remote_src=yes src={{ isos_mount_directory }}/CentOS-7-x86_64-Minimal-1511/isolinux/{{ item }} dest={{ tftp_boot_root }}/centos7/
       with_items: [ vmlinuz, initrd.img ]
 
     # Setup wsgi app to serve kickstart files
