@@ -1,2 +1,4 @@
+*.retry
 *.vdi
+.vagrant/
 pxe_target_name
