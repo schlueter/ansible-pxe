@@ -1,5 +1,5 @@
 autostep
-url --url={{ server.url }}/isos/CentOS-7-x86_64-Minimal-1511
+url --url={{ server.url }}
 firstboot --disable
 install
 text
@@ -13,7 +13,7 @@ selinux --disabled
 rootpw deathbysexyr29
 
 {% for network in target.networks | default([]) %}
-network --device={{ network.device }} --bootproto={{ network.bootproto }}{% if network.ip | default(False) %} --ip={{ network.ip }}{% endif %}{% if network.gateway | default(False) %} --gateway={{ network.gateway }}{% endif %}{% if network.netmask | default(False) %} --netmask={{ network.netmask }}{% endif %}{% if network.bridgeslaves | default(False) %} --bridgeslaves={{ network.bridgeslaves }}{% endif %}
+network --device={{ network.device }} --bootproto={{ network.bootproto }}{% if network.ip | default(False) %} --ip={{ network.ip }}{% endif %}{% if network.gateway | default(False) %} --gateway={{ network.gateway }}{% endif %}{% if network.netmask | default(False) %} --netmask={{ network.netmask }}{% endif %}{% if network.bridgeslaves | default(False) %} --bridgeslaves={{ network.bridgeslaves }}{% endif %}{% if network.nameserver | default(False) %} --nameserver={{ network.nameserver }}{% endif %}
 {% endfor %}
 network --hostname={{ target.hostname }}
 
@@ -36,4 +36,45 @@ reboot
 -wpa_supplicant*
 %end
 %addon com_redhat_kdump --enable --reserve-mb='auto'
+%end
+%post
+mkdir -m0700 /root/.ssh/
+
+cat <<EOF >/root/.ssh/authorized_keys
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCudwHZE4TjlSBOd208kY0OO/rZVwmDOFnhDW9rAUxbCrR1dEkfZMdrY7+r1JmBNnI8DvdlYm58k8VDPDZjXqIV72vOSFcbsUDq6XQ4q2K1cCNU0n8M7wGkEwH9K8O4eXQt/u3+EThl1HsL14rmBsfU0l8e/P/uXZcgBt1Hlh1iNa5THjzYUl8gvZ91j2xRVVBasv25gGRlM+vzOxQRq+scigml6s+HTT6oG84ROHJ3kF1gCa1NBCbSz9E+lmzcU+Cmd5hJjCWZfF+wfgbOUU3zHaZ4n7zAj3jSKkjgLjjJZJY+Soeb9wpyXM55kKGshkXkWiraKvt8TvCc1UgphYz4mC5uwptcUSEGF+tYOZ6PwbLizUDyPBOR55CKFvYHrMtld5y6BpDSlbn1CDZBp4RJww2gerd05kDsViDu0bkh7GMBW7DQ39vCbgapfuQRIKMKXHhqp3SXG2qiMtfyK6rnXsoyvetAgUrwYYNbLKZLmvXz5CENJA7kcitI6o+X7/IUX0JC+7ix/u1ymgW0BCHRMm/MmPoXGzDmc1wrUA21/am2uTwkqx9fj3Ln9hZvH9thzrRCcThabsyDxLJWiif/bA207m3kQe9c/OI6K2P4cdLSqCcga4eAAHZq6xZy4+pRxclpdUQssXsHOydzYzffwuC1Nc11sliMjU8UtKQ2dQ== nyc_cloud_id_rsa
+EOF
+
+chmod 0600 /root/.ssh/authorized_keys
+
+cat <<EOM >/etc/ssh/sshd_config
+Port 22
+Protocol 2
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_dsa_key
+HostKey /etc/ssh/ssh_host_ed25519_key
+
+UsePrivilegeSeparation sandbox
+KeyRegenerationInterval 3600
+SyslogFacility AUTH
+
+LogLevel VERBOSE
+
+PermitRootLogin yes
+StrictModes yes
+RSAAuthentication yes
+PubkeyAuthentication yes
+IgnoreRhosts yes
+RhostsRSAAuthentication no
+HostbasedAuthentication no
+PermitEmptyPasswords no
+ChallengeResponseAuthentication no
+PasswordAuthentication no
+
+PrintMotd no
+PrintLastLog yes
+TCPKeepAlive yes
+AcceptEnv LANG LC_*
+Subsystem sftp /usr/libexec/openssh/sftp-server
+UsePAM yes
+EOM
 %end

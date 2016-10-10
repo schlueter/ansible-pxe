@@ -19,9 +19,12 @@ Vagrant.configure("2") do |config|
       dnsmasq_dhcp_range: '192.168.42.102,192.168.42.102',
       dnsmasq_router: '192.168.42.1',
       dnsmasq_server: '8.8.8.8',
-      dnsmasq_hosts: [],
-      pxe_kickstart_host: IP_ADDR,
-      nginx_network_install_port: 80,
+      dnsmasq_no_dhcp_interfaces: [],
+      dnsmasq_only_known_hosts: false,
+      dnsmasq_dhcp_hosts: [],
+      dnsmasq_dhcp_boot: IP_ADDR,
+      pxe_kickstart_host: "#{IP_ADDR}:8080",
+      nginx_network_install_port: 8080,
       install_isos: [{
         name: 'CentOS-7-x86_64-Minimal-1511',
         url: 'http://mirror.lug.udel.edu/pub/centos/7/isos/x86_64',
@@ -31,7 +34,7 @@ Vagrant.configure("2") do |config|
         boot_files: %w(isolinux/vmlinuz isolinux/initrd.img)
 			}],
       kickstart_host_vars: {
-        'server' => { url: "http://#{IP_ADDR}" },
+        'server' => { url: "http://#{IP_ADDR}:8080/isos/CentOS-7-x86_64-Minimal-1511" },
         '192.168.42.102' => {
           hostname: 'target.pxe.local',
           # usually this is better
