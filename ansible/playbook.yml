@@ -5,10 +5,11 @@
     network_install_http_root: /srv/network-install
     tftp_boot_root: /var/lib/tftpboot
     isos_mount_directory: /mnt/isos
-    kickstart_wsgi_app_dir: /srv/kickstart/
+    kickstart_wsgi_app_dir: /srv/kickstart
     kickstart_wsgi_app: "{{ kickstart_wsgi_app_dir }}/app.py"
   tasks:
-    - apt: update_cache=yes state=latest name='{{ item }}' cache_valid_time=20000
+    - name: Install prerequisite apt packages
+      apt: update_cache=yes state=latest name='{{ item }}' cache_valid_time=20000
       with_items:
         - dnsmasq
         - nginx
@@ -25,21 +26,21 @@
       notify: Restart dnsmasq
 
     # Setup PXE
-    - name: Make distros' tftp boot dirs
+    - name: Make tftp boot directories
       file: state=directory path={{ tftp_boot_root }}/{{ item }}/
       with_items:
-        - centos7
         - pxelinux.cfg
         - memtest
 
-    - name: Install image for pxe menu background
+    - name: Copy image for pxe menu background
       copy: src=r29.jpg dest={{ tftp_boot_root }}/
 
     - name: Copy pxe files from syslinux
       copy: remote_src=yes src=/usr/lib/syslinux/{{ item }} dest={{ tftp_boot_root }}/
       with_items: [ pxelinux.0, vesamenu.c32, reboot.c32 ]
 
-    - template: src=templates/var/lib/tftpboot/pxelinux.cfg/default dest={{ tftp_boot_root }}/pxelinux.cfg/
+    - name: Create pxe boot menu
+      template: src=templates/var/lib/tftpboot/pxelinux.cfg/default dest={{ tftp_boot_root }}/pxelinux.cfg/
 
     - name: Download Memtest
       get_url:
@@ -57,26 +58,35 @@
         remote_src=yes
 
     # Setup Install disk
-    # TODO make this all target agnostic
-    - name: Create mount directory
-      file: state=directory path={{ isos_mount_directory }}/CentOS-7-x86_64-Minimal-1511
+    - name: Create mount directories
+      file: state=directory path={{ isos_mount_directory }}/{{ item.name }}
+      with_items: "{{ install_isos }}"
 
-    - name: Download Centos install disk
+    - name: Download install isos
       get_url:
-        dest=/home/vagrant/CentOS-7-x86_64-Minimal-1511.iso
-        url=http://mirror.lug.udel.edu/pub/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso
-        checksum=md5:88c0437f0a14c6e2c94426df9d43cd67
+        dest=/home/vagrant/{{ item.name }}.iso
+        url={{ item.url }}/{{ item.name }}.iso
+        checksum={{ item.checksum }}
+      with_items: "{{ install_isos }}"
 
-    - name: Mount Centos install disk
+    - name: Mount install isos
       mount:
-        name={{ isos_mount_directory }}/CentOS-7-x86_64-Minimal-1511
-        src=/home/vagrant/CentOS-7-x86_64-Minimal-1511.iso
+        name={{ isos_mount_directory }}/{{ item.name }}
+        src=/home/vagrant/{{ item.name }}.iso
         fstype=iso9660
         state=mounted
+      with_items: "{{ install_isos }}"
 
-    - name: Copy boot files for distros
-      copy: remote_src=yes src={{ isos_mount_directory }}/CentOS-7-x86_64-Minimal-1511/isolinux/{{ item }} dest={{ tftp_boot_root }}/centos7/
-      with_items: [ vmlinuz, initrd.img ]
+    - name: Create boot directories for isos
+      file: state=directory path={{ tftp_boot_root }}/{{ item.name }}
+      with_items: "{{ install_isos }}"
+
+
+    - name: Copy boot files for isos
+      copy: remote_src=yes src={{ isos_mount_directory }}/{{ item.0.name }}/{{ item.1 }} dest={{ tftp_boot_root }}/{{ item.0.name}}
+      with_subelements:
+        - "{{ install_isos }}"
+        - boot_files
 
     # Setup wsgi app to serve kickstart files
     - name: Make app dir
@@ -93,7 +103,7 @@
       copy: dest={{ kickstart_wsgi_app_dir }}/host_vars.yml content="{{ kickstart_host_vars | to_nice_yaml }}"
 
     - name: Copy kickstart template files
-      copy: src=files/srv/kickstart/templates dest={{ kickstart_wsgi_app_dir }}
+      copy: src=files/srv/kickstart/templates dest={{ kickstart_wsgi_app_dir }}/
 
     # Setup Nginx to serve the install disk and kickstart
     - template: src=templates/etc/nginx/sites-available/network-install.conf dest=/etc/nginx/sites-available/

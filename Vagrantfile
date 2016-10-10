@@ -17,8 +17,16 @@ Vagrant.configure("2") do |config|
       dnsmasq_server: '8.8.8.8',
       dnsmasq_hosts: [],
       pxe_kickstart_host: IP_ADDR,
+      install_isos: [{
+        name: 'CentOS-7-x86_64-Minimal-1511',
+        url: 'http://mirror.lug.udel.edu/pub/centos/7/isos/x86_64',
+        checksum: 'md5:88c0437f0a14c6e2c94426df9d43cd67',
+        kernel: 'vmlinuz',
+        initrd: 'initrd.img',
+        boot_files: %w(isolinux/vmlinuz isolinux/initrd.img)
+			}],
       kickstart_host_vars: {
-        server: { url: "http://#{IP_ADDR}" },
+        'server' => { url: "http://#{IP_ADDR}" },
         '192.168.42.102' => {
           hostname: 'target.pxe.local',
           # usually this is better
