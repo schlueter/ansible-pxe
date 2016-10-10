@@ -4,8 +4,12 @@ Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/trusty64"
   config.vm.hostname = HOSTNAME
   config.vm.network :private_network, ip: IP_ADDR
-  config.vm.provision :file, source: "~/Downloads/CentOS-7-x86_64-Minimal-1511.iso", destination: "/home/vagrant/CentOS-7-x86_64-Minimal-1511.iso"
-  config.vm.provision :file, source: "~/Downloads/memtest86+-5.01.bin.gz", destination: "/home/vagrant/memtest86+-5.01.bin.gz"
+  if File.file?('~/Downloads/CentOS-7-x86_64-Minimal-1511.iso')
+      config.vm.provision :file, source: '~/Downloads/CentOS-7-x86_64-Minimal-1511.iso', destination: "/home/vagrant/CentOS-7-x86_64-Minimal-1511.iso"
+  end
+  if File.file?('memtest86+-5.01.bin.gz')
+      config.vm.provision :file, source: "~/Downloads/memtest86+-5.01.bin.gz", destination: "/home/vagrant/memtest86+-5.01.bin.gz"
+  end
   config.vm.provision :ansible,
     playbook: 'ansible/playbook.yml',
     sudo: true,
@@ -17,6 +21,7 @@ Vagrant.configure("2") do |config|
       dnsmasq_server: '8.8.8.8',
       dnsmasq_hosts: [],
       pxe_kickstart_host: IP_ADDR,
+      nginx_network_install_port: 80,
       install_isos: [{
         name: 'CentOS-7-x86_64-Minimal-1511',
         url: 'http://mirror.lug.udel.edu/pub/centos/7/isos/x86_64',
