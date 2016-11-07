@@ -37,7 +37,7 @@
 
     - name: Copy pxe files from syslinux
       copy: remote_src=yes src=/usr/lib/syslinux/{{ item }} dest={{ tftp_boot_root }}/
-      with_items: [ pxelinux.0, vesamenu.c32, reboot.c32 ]
+      with_items: [ pxelinux.0, vesamenu.c32, reboot.c32, vesainfo.c32 ]
 
     - name: Create pxe boot menu
       template: src=templates/var/lib/tftpboot/pxelinux.cfg/default dest={{ tftp_boot_root }}/pxelinux.cfg/

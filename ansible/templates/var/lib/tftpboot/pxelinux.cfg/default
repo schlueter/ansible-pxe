@@ -5,7 +5,7 @@ menu background r29.jpg
 menu resolution 640 400
 menu width 55
 menu margin 0
-menu rows {{ install_isos | length * 2 + 3 }}
+menu rows {{ install_isos | length * 2 + 4 }}
 menu hshift 2
 menu vshift 1
 
@@ -33,3 +33,7 @@ label warm_reboot
   menu label Warm reboot
   com32 reboot.c32
   append --warm
+
+label vesa_info
+  menu label VESA info
+  com32 vesainfo.c32

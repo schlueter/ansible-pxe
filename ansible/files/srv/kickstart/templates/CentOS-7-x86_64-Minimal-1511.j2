@@ -34,6 +34,7 @@ reboot
 -alsa*
 -iwl*firmware
 -wpa_supplicant*
+bash-completion
 %end
 %addon com_redhat_kdump --enable --reserve-mb='auto'
 %end
@@ -77,4 +78,5 @@ AcceptEnv LANG LC_*
 Subsystem sftp /usr/libexec/openssh/sftp-server
 UsePAM yes
 EOM
+curl https://slack.com/api/chat.postMessage --form token="xoxb-90704100215-8oS9qLSgYkjxr5w3UKgcblAP" --form channel="#squad-ghostbusters" --form username=kickstartbot --form text="test from $(hostname)"
 %end
