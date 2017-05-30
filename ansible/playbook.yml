@@ -36,11 +36,16 @@
       copy: src=r29.jpg dest={{ tftp_boot_root }}/
 
     - name: Copy pxe files from syslinux
-      copy: remote_src=yes src=/usr/lib/syslinux/{{ item }} dest={{ tftp_boot_root }}/
+      copy:
+        remote_src=yes
+        src=/usr/lib/syslinux/{{ item }}
+        dest={{ tftp_boot_root }}/
       with_items: [ pxelinux.0, vesamenu.c32, reboot.c32, vesainfo.c32 ]
 
     - name: Create pxe boot menu
-      template: src=templates/var/lib/tftpboot/pxelinux.cfg/default dest={{ tftp_boot_root }}/pxelinux.cfg/
+      template:
+        src=templates/var/lib/tftpboot/pxelinux.cfg/default
+        dest={{ tftp_boot_root }}/pxelinux.cfg/
 
     - name: Download Memtest
       get_url:
@@ -49,7 +54,9 @@
         checksum=md5:14ec4c4d827a49629c41b499303355ed
 
     - name: Decompress memtest
-      command: gunzip --keep /home/vagrant/memtest86+-5.01.bin.gz creates=/home/vagrant/memtest86+-5.01.bin
+      command:
+        gunzip --keep /home/vagrant/memtest86+-5.01.bin.gz
+        creates=/home/vagrant/memtest86+-5.01.bin
 
     - name: Make memtest available for boot
       copy:
@@ -59,7 +66,9 @@
 
     # Setup Install disk
     - name: Create mount directories
-      file: state=directory path={{ isos_mount_directory }}/{{ item.name }}
+      file:
+        state=directory
+        path={{ isos_mount_directory }}/{{ item.name }}
       with_items: "{{ install_isos }}"
 
     - name: Download install isos
@@ -78,12 +87,17 @@
       with_items: "{{ install_isos }}"
 
     - name: Create boot directories for isos
-      file: state=directory path={{ tftp_boot_root }}/{{ item.name }}
+      file:
+        state=directory
+        path={{ tftp_boot_root }}/{{ item.name }}
       with_items: "{{ install_isos }}"
 
 
     - name: Copy boot files for isos
-      copy: remote_src=yes src={{ isos_mount_directory }}/{{ item.0.name }}/{{ item.1 }} dest={{ tftp_boot_root }}/{{ item.0.name}}
+      copy:
+        remote_src=yes
+        src={{ isos_mount_directory }}/{{ item.0.name }}/{{ item.1 }}
+        dest={{ tftp_boot_root }}/{{ item.0.name}}
       with_subelements:
         - "{{ install_isos }}"
         - boot_files
@@ -93,23 +107,38 @@
       file: state=directory path=/srv/kickstart/
 
     - name: Install python wsgi app
-      template: src=templates/{{ kickstart_wsgi_app }} dest={{ kickstart_wsgi_app }}
+      template:
+        src=templates/{{ kickstart_wsgi_app }}
+        dest={{ kickstart_wsgi_app }}
       notify: Restart kickstart app
 
     - name: Install upstart script
-      template: src=templates/etc/init/kickstart.conf dest=/etc/init/kickstart.conf
+      template:
+        src=templates/etc/init/kickstart.conf
+        dest=/etc/init/kickstart.conf
 
     - name: Install kickstart app data
-      copy: dest={{ kickstart_wsgi_app_dir }}/host_vars.yml content="{{ kickstart_host_vars | to_nice_yaml }}"
+      copy:
+        dest={{ kickstart_wsgi_app_dir }}/host_vars.yml
+        content="{{ kickstart_host_vars | to_nice_yaml }}"
 
     - name: Copy kickstart template files
-      copy: src=files/srv/kickstart/templates dest={{ kickstart_wsgi_app_dir }}/
+      copy:
+        src=files/srv/kickstart/templates
+        dest={{ kickstart_wsgi_app_dir }}/
 
     # Setup Nginx to serve the install disk and kickstart
-    - template: src=templates/etc/nginx/sites-available/network-install.conf dest=/etc/nginx/sites-available/
+    - name: Install network-install nginx config from template
+      template:
+        src=templates/etc/nginx/sites-available/network-install.conf
+        dest=/etc/nginx/sites-available/
       notify: Restart nginx
 
-    - file: state=link src=../sites-available/network-install.conf path=/etc/nginx/sites-enabled/network-install.conf
+    - name: Link network-install nginx config to enabled directory
+      file:
+        state=link
+        src=../sites-available/network-install.conf
+        path=/etc/nginx/sites-enabled/network-install.conf
       notify: Restart nginx
 
     - file: state=absent path=/etc/nginx/sites-enabled/default
