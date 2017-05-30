@@ -26,15 +26,15 @@ Vagrant.configure("2") do |config|
       pxe_kickstart_host: "#{IP_ADDR}:8080",
       nginx_network_install_port: 8080,
       install_isos: [{
-        name: 'CentOS-7-x86_64-Minimal-1511',
-        url: 'http://mirror.lug.udel.edu/pub/centos/7/isos/x86_64',
-        checksum: 'md5:88c0437f0a14c6e2c94426df9d43cd67',
+        name: 'CentOS-7-x86_64-Minimal',
+        url: 'https://buildlogs.centos.org/rolling/7/isos/x86_64',
+        checksum: 'md5:19193aa7831f35f32dc0f1fc7fb6fc3e',
         kernel: 'vmlinuz',
         initrd: 'initrd.img',
         boot_files: %w(isolinux/vmlinuz isolinux/initrd.img)
 			}],
       kickstart_host_vars: {
-        'server' => { url: "http://#{IP_ADDR}:8080/isos/CentOS-7-x86_64-Minimal-1511" },
+        'server' => { url: "http://#{IP_ADDR}:8080/isos/CentOS-7-x86_64-Minimal" },
         '192.168.42.102' => {
           hostname: 'target.pxe.local',
           # usually this is better
