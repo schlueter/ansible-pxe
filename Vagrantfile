@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
     sudo: true,
     verbose: 'vv',
     extra_vars: {
-      dnsmasq_interface: 'eth1',
+      dnsmasq_interface: 'enp0s8',
       dnsmasq_dhcp_range: '192.168.42.102,192.168.42.102',
       dnsmasq_router: '192.168.42.1',
       dnsmasq_server: '8.8.8.8',
@@ -23,13 +23,6 @@ Vagrant.configure("2") do |config|
       pxe_kickstart_host: "#{IP_ADDR}:8080",
       nginx_network_install_port: 8080,
       install_isos: [{
-        name: 'CentOS-7-x86_64-Minimal',
-        url: 'https://buildlogs.centos.org/rolling/7/isos/x86_64',
-        checksum: 'md5:19193aa7831f35f32dc0f1fc7fb6fc3e',
-        kernel: 'vmlinuz',
-        initrd: 'initrd.img',
-        boot_files: %w(isolinux/vmlinuz isolinux/initrd.img)
-			},{
         name: 'Ubuntu-Xenial-amd64-netboot',
         filename: 'mini',
         url: 'http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-amd64/current/images/netboot',
@@ -37,7 +30,14 @@ Vagrant.configure("2") do |config|
         kernel: 'linux',
         initrd: 'initrd.gz',
         boot_files: %w(linux initrd.gz)
-      }],
+      },{
+        name: 'CentOS-7-x86_64-Minimal',
+        url: 'https://buildlogs.centos.org/rolling/7/isos/x86_64',
+        checksum: 'md5:19193aa7831f35f32dc0f1fc7fb6fc3e',
+        kernel: 'vmlinuz',
+        initrd: 'initrd.img',
+        boot_files: %w(isolinux/vmlinuz isolinux/initrd.img)
+			}],
       kickstart_host_vars: {
         'server' => { centos_7_x86_64: { url: "http://#{IP_ADDR}:8080/isos/CentOS-7-x86_64-Minimal" },
                       ubuntu_xenial_amd64: { url: "http://mirror.math.princeton.edu/pub/ubuntu/" }},
@@ -47,7 +47,7 @@ Vagrant.configure("2") do |config|
           # install_drive: '/dev/disk/by-path/pci-0000:00:01.1-ata-1.0',
           install_drive: '/dev/sda',
           networks: [{
-            device: 'enp0s3',
+            device: 'enp0s8',
             bootproto: 'dhcp',
           }]
         }

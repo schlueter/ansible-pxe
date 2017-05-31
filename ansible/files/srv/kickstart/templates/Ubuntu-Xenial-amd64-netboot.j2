@@ -6,9 +6,10 @@ text
 
 keyboard --vckeymap=us --xlayouts='us'
 lang en_US.UTF-8
-timezone America/New_York --isUtc
+timezone America/New_York
 
-auth --passalgo=sha512
+preseed passwd/make-user boolean false
+auth --useshadow --enablemd5
 selinux --disabled
 rootpw badpassword
 
@@ -17,26 +18,65 @@ network --device={{ network.device }} --bootproto={{ network.bootproto }}{% if n
 {% endfor %}
 network --hostname={{ target.hostname }}
 
+# d-i partman-auto/disk string /dev/sda
+# d-i partman-auto/method string lvm
+# d-i partman-lvm/device_remove_lvm boolean true
+# d-i partman-lvm/device_remove_lvm_span boolean true
+# d-i partman-auto/purge_lvm_from_device  boolean true
+# d-i partman-auto-lvm/new_vg_name string system
+# d-i partman-auto/expert_recipe string                         \
+#       boot-root ::                                            \
+#               40 300 300 ext4                                 \
+#                       $primary{ }                             \
+#                       $bootable{ }                            \
+#                       method{ format } format{ }              \
+#                       use_filesystem{ } filesystem{ ext4 }    \
+#                       mountpoint{ /boot }                     \
+#               .                                               \
+#               2000 10000 1000000000 ext4                      \
+#                       $lvmok{ }                               \
+#                       method{ format } format{ }              \
+#                       use_filesystem{ } filesystem{ ext4 }    \
+#                       mountpoint{ / }                         \
+#               .                                               \
+#               2000 1000 10000 ext4                            \
+#                       $lvmok{ }                               \
+#                       method{ format } format{ }              \
+#                       use_filesystem{ } filesystem{ ext4 }    \
+#                       mountpoint{ /var }                      \
+#               .                                               \
+#               2000 1000 60000 ext4                            \
+#                       $lvmok{ }                               \
+#                       method{ format } format{ }              \
+#                       use_filesystem{ } filesystem{ ext4 }    \
+#                       mountpoint{ /var/lib/mysql }                      \
+#               .                                               \
+#               2000 1000 30000 ext4                            \
+#                       $lvmok{ }                               \
+#                       method{ format } format{ }              \
+#                       use_filesystem{ } filesystem{ ext4 }    \
+#                       mountpoint{ /www }                      \
+#               .                                               \
+#               8000 8000 200% linux-swap                       \
+#                       $lvmok{ }                               \
+#                       method{ swap } format{ }                \
+# d-i partman-lvm/confirm boolean true
+# d-i partman/confirm_write_new_label boolean true
+# d-i partman/choose_partition select Finish partitioning and write changes to disk
+# d-i partman/confirm boolean true
+
 zerombr
 clearpart --all
-part /boot --fstype xfs --size=512 --ondisk={{ target.install_drive }}
-part pv.01 --size 1 --grow --ondisk={{ target.install_drive }}
+part /boot --fstype ext2 --size=512 --asprimary
+part pv.01 --size 1 --grow
 volgroup VG pv.01
 logvol swap --name=LV_SWAP --fstype=swap --vgname=VG --recommended
 logvol /    --name=LV_ROOT --fstype=xfs --vgname=VG --size=1 --grow
-bootloader --append=" crashkernel=auto" --location=mbr --boot-drive={{ target.install_drive }}
+bootloader --location=mbr
 
 skipx
 reboot
-%packages --nobase
-@core --nodefaults
--aic94xx-firmware*
--alsa*
--iwl*firmware
--wpa_supplicant*
-%end
-%addon com_redhat_kdump --enable --reserve-mb='auto'
-%end
+
 %post
 mkdir -m0700 /root/.ssh/
 

@@ -15,6 +15,7 @@
         - dnsmasq
         - nginx
         - syslinux
+        - pxelinux
         - uwsgi
         - uwsgi-plugin-python
         - python-jinja2
@@ -35,16 +36,26 @@
     - name: Copy image for pxe menu background
       copy: src=r29.jpg dest={{ tftp_boot_root }}/
 
-    - name: Copy pxe files from syslinux
+    - name: Copy pxe files from pxelinux
       copy:
         remote_src=yes
-        src=/usr/lib/syslinux/{{ item }}
+        src=/usr/lib/PXELINUX/{{ item }}
         dest={{ tftp_boot_root }}/
       with_items:
         - pxelinux.0
+
+    - name: Copy pxe files from pxelinux
+      copy:
+        remote_src=yes
+        src=/usr/lib/syslinux/modules/bios/{{ item }}
+        dest={{ tftp_boot_root }}/
+      with_items:
         - vesamenu.c32
         - reboot.c32
         - vesainfo.c32
+        - ldlinux.c32
+        - libcom32.c32
+        - libutil.c32
 
     - name: Create pxe boot menu
       template:
@@ -96,7 +107,6 @@
         path={{ tftp_boot_root }}/{{ item.name }}
       with_items: "{{ install_isos }}"
 
-
     - name: Copy boot files for isos
       copy:
         remote_src=yes
@@ -114,12 +124,20 @@
       template:
         src=templates/{{ kickstart_wsgi_app }}
         dest={{ kickstart_wsgi_app }}
-      notify: Restart kickstart app
+      notify: Restart uwsgi
 
-    - name: Install upstart script
+    - name: Install uwsgi config for kickstart app
       template:
-        src=templates/etc/init/kickstart.conf
-        dest=/etc/init/kickstart.conf
+        src=templates/etc/uwsgi/apps-available/kickstart.ini
+        dest=/etc/uwsgi/apps-available/kickstart.ini
+      notify: Restart uwsgi
+
+    - name: Link kickstart uwsgi config to enabled directory
+      file:
+        state=link
+        src=../apps-available/kickstart.ini
+        path=/etc/uwsgi/apps-enabled/kickstart.ini
+      notify: Restart uwsgi
 
     - name: Install kickstart app data
       copy:
@@ -145,7 +163,8 @@
         path=/etc/nginx/sites-enabled/network-install.conf
       notify: Restart nginx
 
-    - file: state=absent path=/etc/nginx/sites-enabled/default
+    - name: Remove default nginx site
+      file: state=absent path=/etc/nginx/sites-enabled/default
       notify: Restart nginx
 
   handlers:
@@ -155,5 +174,5 @@
     - name: Restart nginx
       service: name=nginx state=restarted enabled=yes
 
-    - name: Restart kickstart app
-      service: name=kickstart state=restarted enabled=yes
+    - name: Restart uwsgi
+      service: name=uwsgi state=restarted enabled=yes
