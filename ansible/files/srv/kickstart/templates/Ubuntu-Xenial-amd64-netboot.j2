@@ -1,5 +1,5 @@
 autostep
-url --url={{ server.centos_7_x86_64.url }}
+url --url={{ server.ubuntu_xenial_amd64.url }}
 firstboot --disable
 install
 text
@@ -34,7 +34,6 @@ reboot
 -alsa*
 -iwl*firmware
 -wpa_supplicant*
-bash-completion
 %end
 %addon com_redhat_kdump --enable --reserve-mb='auto'
 %end

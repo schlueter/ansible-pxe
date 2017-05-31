@@ -1,19 +1,12 @@
 Vagrant.configure("2") do |config|
   HOSTNAME = "pxe.local.rf29.net"
   IP_ADDR = "192.168.42.2"
-  config.vm.box = "ubuntu/trusty64"
+  config.vm.box = "ubuntu/xenial64"
   config.vm.hostname = HOSTNAME
   config.vm.network :private_network, ip: IP_ADDR
-  if File.file?('~/Downloads/CentOS-7-x86_64-Minimal-1511.iso')
-      config.vm.provision :file,
-        source: '~/Downloads/CentOS-7-x86_64-Minimal.iso',
-        destination: "/home/vagrant/CentOS-7-x86_64-Minimal.iso"
-  end
-  if File.file?('memtest86+-5.01.bin.gz')
-      config.vm.provision :file,
-        source: "~/Downloads/memtest86+-5.01.bin.gz",
-        destination: "/home/vagrant/memtest86+-5.01.bin.gz"
-  end
+  config.vm.provision "shell",
+    inline: 'apt-get update && apt-get install -y python-minimal',
+    privileged: true
   config.vm.provision :ansible,
     playbook: 'ansible/playbook.yml',
     sudo: true,
@@ -36,9 +29,18 @@ Vagrant.configure("2") do |config|
         kernel: 'vmlinuz',
         initrd: 'initrd.img',
         boot_files: %w(isolinux/vmlinuz isolinux/initrd.img)
-			}],
+			},{
+        name: 'Ubuntu-Xenial-amd64-netboot',
+        filename: 'mini',
+        url: 'http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-amd64/current/images/netboot',
+        checksum: 'md5:fe495d34188a9568c8d166efc5898d22',
+        kernel: 'linux',
+        initrd: 'initrd.gz',
+        boot_files: %w(linux initrd.gz)
+      }],
       kickstart_host_vars: {
-        'server' => { url: "http://#{IP_ADDR}:8080/isos/CentOS-7-x86_64-Minimal" },
+        'server' => { centos_7_x86_64: { url: "http://#{IP_ADDR}:8080/isos/CentOS-7-x86_64-Minimal" },
+                      ubuntu_xenial_amd64: { url: "http://mirror.math.princeton.edu/pub/ubuntu/" }},
         '192.168.42.102' => {
           hostname: 'target.pxe.local',
           # usually this is better
@@ -46,13 +48,7 @@ Vagrant.configure("2") do |config|
           install_drive: '/dev/sda',
           networks: [{
             device: 'enp0s3',
-            bootproto: 'static',
-            ip: '192.168.42.102',
-            netmask: '255.255.255.0'
-          }, {
-            device: 'br0',
-            bridgeslaves: 'enp0s8',
-            bootproto: 'dhcp'
+            bootproto: 'dhcp',
           }]
         }
       }

@@ -1,6 +1,7 @@
 ---
 - hosts: all
   gather_facts: yes
+  become: yes
   vars:
     network_install_http_root: /srv/network-install
     tftp_boot_root: /var/lib/tftpboot
@@ -14,7 +15,6 @@
         - dnsmasq
         - nginx
         - syslinux
-        - syslogd
         - uwsgi
         - uwsgi-plugin-python
         - python-jinja2
@@ -40,7 +40,11 @@
         remote_src=yes
         src=/usr/lib/syslinux/{{ item }}
         dest={{ tftp_boot_root }}/
-      with_items: [ pxelinux.0, vesamenu.c32, reboot.c32, vesainfo.c32 ]
+      with_items:
+        - pxelinux.0
+        - vesamenu.c32
+        - reboot.c32
+        - vesainfo.c32
 
     - name: Create pxe boot menu
       template:
@@ -49,18 +53,18 @@
 
     - name: Download Memtest
       get_url:
-        dest=/home/vagrant/memtest86+-5.01.bin.gz
+        dest=/vagrant/memtest86+-5.01.bin.gz
         url=http://www.memtest.org/download/5.01/memtest86+-5.01.bin.gz
         checksum=md5:14ec4c4d827a49629c41b499303355ed
 
     - name: Decompress memtest
       command:
-        gunzip --keep /home/vagrant/memtest86+-5.01.bin.gz
-        creates=/home/vagrant/memtest86+-5.01.bin
+        gunzip --keep /vagrant/memtest86+-5.01.bin.gz
+        creates=/vagrant/memtest86+-5.01.bin
 
     - name: Make memtest available for boot
       copy:
-        src=/home/vagrant/memtest86+-5.01.bin
+        src=/vagrant/memtest86+-5.01.bin
         dest={{ tftp_boot_root }}/memtest/memtest
         remote_src=yes
 
@@ -73,15 +77,15 @@
 
     - name: Download install isos
       get_url:
-        dest=/home/vagrant/{{ item.name }}.iso
-        url={{ item.url }}/{{ item.name }}.iso
+        dest=/vagrant/{{ item.name }}.iso
+        url={{ item.url }}/{{ item.filename | default(item.name) }}.iso
         checksum={{ item.checksum }}
       with_items: "{{ install_isos }}"
 
     - name: Mount install isos
       mount:
         name={{ isos_mount_directory }}/{{ item.name }}
-        src=/home/vagrant/{{ item.name }}.iso
+        src=/vagrant/{{ item.name }}.iso
         fstype=iso9660
         state=mounted
       with_items: "{{ install_isos }}"
