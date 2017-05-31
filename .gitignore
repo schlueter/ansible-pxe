@@ -2,3 +2,4 @@
 *.vdi
 .vagrant/
 pxe_target_name
+memtest86+-5.01.bin
