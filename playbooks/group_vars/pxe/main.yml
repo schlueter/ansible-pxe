@@ -1,0 +1,49 @@
+---
+dnsmasq_dhcp_boot: 192.168.42.2
+dnsmasq_dhcp_hosts: []
+dnsmasq_dhcp_range: 192.168.42.102,192.168.42.102
+dnsmasq_interface: enp0s8
+dnsmasq_no_dhcp_interfaces: []
+dnsmasq_only_known_hosts: false
+dnsmasq_router: 192.168.42.1
+dnsmasq_server: 8.8.8.8
+nginx_network_install_port: 8080
+pxe_kickstart_host: 192.168.42.2:8080
+install_isos:
+  -
+    name: Ubuntu-Xenial-amd64-netboot
+    filename: mini
+    url: http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-amd64/current/images/netboot
+    checksum: md5:fe495d34188a9568c8d166efc5898d22
+    kernel: linux
+    initrd: initrd.gz
+    boot_files: [ linux, initrd.gz ]
+  -
+    name: CentOS-7-x86_64-Minimal
+    url: https://buildlogs.centos.org/rolling/7/isos/x86_64
+    checksum: md5:19193aa7831f35f32dc0f1fc7fb6fc3e
+    kernel: vmlinuz
+    initrd: initrd.img
+    boot_files: [ isolinux/vmlinuz, isolinux/initrd.img ]
+
+kickstart_host_vars:
+  server:
+    centos_7_x86_64:
+      url: http://192.168.42.2:8080/isos/CentOS-7-x86_64-Minimal
+
+  default:
+    hostname: pxefresh.local
+    networks:
+      -
+        device: enp0s8
+        bootproto: dhcp
+
+install_isos:
+  -
+    name: Ubuntu-Xenial-amd64-netboot
+    filename: mini
+    url: http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-amd64/current/images/netboot
+    checksum: md5:fe495d34188a9568c8d166efc5898d22
+    kernel: linux
+    initrd: initrd.gz
+    boot_files: [ linux, initrd.gz ]

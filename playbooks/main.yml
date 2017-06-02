@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: pxe
   gather_facts: yes
   become: yes
   vars:

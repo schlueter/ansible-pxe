@@ -1,0 +1,69 @@
+autostep
+url --url=http://mirror.math.princeton.edu/pub/ubuntu/
+firstboot --disable
+install
+text
+
+keyboard --vckeymap=us --xlayouts='us'
+lang en_US.UTF-8
+timezone America/New_York
+
+preseed passwd/make-user boolean false
+auth --useshadow --enablemd5
+selinux --disabled
+rootpw deathbysexyr29
+
+{%- for network in target.networks | default([]) %}
+network --device={{ network.device }} --bootproto={{ network.bootproto }}{% if network.ip | default(False) %} --ip={{ network.ip }}{% endif %}{% if network.gateway | default(False) %} --gateway={{ network.gateway }}{% endif %}{% if network.netmask | default(False) %} --netmask={{ network.netmask }}{% endif %}{% if network.bridgeslaves | default(False) %} --bridgeslaves={{ network.bridgeslaves }}{% endif %}{% if network.nameserver | default(False) %} --nameserver={{ network.nameserver }}{% endif %}
+{%- endfor %}
+network --hostname=unprovisioned
+
+zerombr
+clearpart --all
+part /boot --fstype ext2 --size=512 --asprimary
+part swap --fstype=swap --recommended
+part / --fstype xfs --size 1 --asprimary --grow
+bootloader --location=mbr
+
+skipx
+reboot
+
+%post
+mkdir -m0700 /root/.ssh/
+
+cat <<EOF >/root/.ssh/authorized_keys
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCudwHZE4TjlSBOd208kY0OO/rZVwmDOFnhDW9rAUxbCrR1dEkfZMdrY7+r1JmBNnI8DvdlYm58k8VDPDZjXqIV72vOSFcbsUDq6XQ4q2K1cCNU0n8M7wGkEwH9K8O4eXQt/u3+EThl1HsL14rmBsfU0l8e/P/uXZcgBt1Hlh1iNa5THjzYUl8gvZ91j2xRVVBasv25gGRlM+vzOxQRq+scigml6s+HTT6oG84ROHJ3kF1gCa1NBCbSz9E+lmzcU+Cmd5hJjCWZfF+wfgbOUU3zHaZ4n7zAj3jSKkjgLjjJZJY+Soeb9wpyXM55kKGshkXkWiraKvt8TvCc1UgphYz4mC5uwptcUSEGF+tYOZ6PwbLizUDyPBOR55CKFvYHrMtld5y6BpDSlbn1CDZBp4RJww2gerd05kDsViDu0bkh7GMBW7DQ39vCbgapfuQRIKMKXHhqp3SXG2qiMtfyK6rnXsoyvetAgUrwYYNbLKZLmvXz5CENJA7kcitI6o+X7/IUX0JC+7ix/u1ymgW0BCHRMm/MmPoXGzDmc1wrUA21/am2uTwkqx9fj3Ln9hZvH9thzrRCcThabsyDxLJWiif/bA207m3kQe9c/OI6K2P4cdLSqCcga4eAAHZq6xZy4+pRxclpdUQssXsHOydzYzffwuC1Nc11sliMjU8UtKQ2dQ== nyc_cloud_id_rsa
+EOF
+
+chmod 0600 /root/.ssh/authorized_keys
+
+cat <<EOM >/etc/ssh/sshd_config
+# Installed by kickstart http://github.com/refinery29/pxe
+Port 22
+Protocol 2
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_dsa_key
+HostKey /etc/ssh/ssh_host_ed25519_key
+UsePrivilegeSeparation sandbox
+KeyRegenerationInterval 3600
+SyslogFacility AUTH
+LogLevel VERBOSE
+PermitRootLogin yes
+StrictModes yes
+RSAAuthentication yes
+PubkeyAuthentication yes
+IgnoreRhosts yes
+RhostsRSAAuthentication no
+HostbasedAuthentication no
+PermitEmptyPasswords no
+ChallengeResponseAuthentication no
+PasswordAuthentication no
+PrintMotd no
+PrintLastLog yes
+TCPKeepAlive yes
+AcceptEnv LANG LC_*
+Subsystem sftp /usr/libexec/openssh/sftp-server
+UsePAM yes
+EOM
+curl https://slack.com/api/chat.postMessage --form token="xoxb-90704100215-8oS9qLSgYkjxr5w3UKgcblAP" --form channel="#squad-ghostbusters" --form username=kickstartbot --form text="test from $(hostname -f): \`\`\`$(ip addr)\`\`\`"
+%end
