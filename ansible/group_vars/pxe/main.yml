@@ -1,0 +1,180 @@
+---
+dnsmasq_interface: eno1
+dnsmasq_dhcp_range: 10.10.210.42,10.10.210.73
+dnsmasq_router: 10.10.210.1
+dnsmasq_server: 8.8.8.8
+dnsmasq_dhcp_boot: 10.10.210.102
+pxe_kickstart_host: 10.10.210.102:8080
+nginx_network_install_port: 8080
+install_isos:
+  -
+    name: Ubuntu-Xenial-amd64-netboot
+    filename: mini
+    url: http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-amd64/current/images/netboot
+    checksum: md5:fe495d34188a9568c8d166efc5898d22
+    kernel: linux
+    initrd: initrd.gz
+    boot_files: [ linux, initrd.gz ]
+
+dnsmasq_dhcp_hosts:
+  -
+    ip: 10.10.210.191
+    mac: '00:25:b5:01:a0:08'
+  -
+    ip: 10.10.210.192
+    mac: '00:25:b5:01:a0:0e'
+  -
+    ip: 10.10.210.201
+    mac: '00:25:b5:01:a0:01'
+  -
+    ip: 10.10.210.202
+    mac: '00:25:b5:01:a0:02'
+  -
+    ip: 10.10.210.203
+    mac: '00:25:b5:01:a0:04'
+  -
+    ip: 10.10.210.204
+    mac: '00:25:b5:01:a0:0a'
+  -
+    ip: 10.10.210.205
+    mac: '00:25:b5:01:a0:05'
+  -
+    ip: 10.10.210.206
+    mac: '00:25:b5:01:a0:0b'
+  -
+    ip: 10.10.210.207
+    mac: '00:25:b5:01:a0:06'
+  -
+    ip: 10.10.210.208
+    mac: '00:25:b5:01:a0:0c'
+  -
+    ip: 10.10.210.209
+    mac: '00:25:b5:01:a0:07'
+  -
+    ip: 10.10.210.210
+    mac: '00:25:b5:01:a0:0D'
+
+kickstart_host_vars:
+  server:
+    ubuntu_xenial_amd64:
+      url: http://mirror.math.princeton.edu/pub/ubuntu/
+
+  10.10.210.191:
+    hostname: control01c
+    install_drive: /dev/disk/by-path/pci-0000:01:00.0-scsi-0:2:0:0
+    networks:
+      -
+        device: enp6s0
+        bootproto: dhcp
+        ip: 10.10.210.191
+        netmask: 255.255.255.0
+
+  10.10.210.192:
+    hostname: control02c
+    install_drive: /dev/disk/by-path/pci-0000:01:00.0-scsi-0:2:0:0
+    networks:
+      -
+        device: enp6s0
+        bootproto: dhcp
+        ip: 10.10.210.205
+        netmask: 255.255.255.0
+
+  10.10.210.205
+    hostname: r29-nc-01
+    install_drive: /dev/disk/by-path/pci-0000:00:1d.0-usb-0:1.5:1.0-scsi-0:0:0:0
+    networks:
+      -
+        device: enp6s0
+        bootproto: dhcp
+        ip: 10.10.210.205
+        netmask: 255.255.255.0
+
+  10.10.210.205
+    hostname: r29-nc-02
+    install_drive: /dev/disk/by-path/pci-0000:00:1d.0-usb-0:1.5:1.0-scsi-0:0:0:0
+    networks:
+      -
+        device: enp6s0
+        bootproto: dhcp
+        ip: 10.10.210.205
+        netmask: 255.255.255.0
+
+  10.10.210.205
+    hostname: r29-nc-03
+    install_drive: /dev/disk/by-path/pci-0000:00:1d.0-usb-0:1.5:1.0-scsi-0:0:0:0
+    networks:
+      -
+        device: enp6s0
+        bootproto: dhcp
+        ip: 10.10.210.205
+        netmask: 255.255.255.0
+
+  10.10.210.205
+    hostname: r29-nc-04
+    install_drive: /dev/disk/by-path/pci-0000:00:1d.0-usb-0:1.5:1.0-scsi-0:0:0:0
+    networks:
+      -
+        device: enp6s0
+        bootproto: dhcp
+        ip: 10.10.210.205
+        netmask: 255.255.255.0
+
+  10.10.210.205
+    hostname: r29-nc-05
+    install_drive: /dev/disk/by-path/pci-0000:00:1d.0-usb-0:1.5:1.0-scsi-0:0:0:0
+    networks:
+      -
+        device: enp6s0
+        bootproto: dhcp
+        ip: 10.10.210.205
+        netmask: 255.255.255.0
+
+  10.10.210.205
+    hostname: r29-nc-06
+    install_drive: /dev/disk/by-path/pci-0000:00:1d.0-usb-0:1.5:1.0-scsi-0:0:0:0
+    networks:
+      -
+        device: enp6s0
+        bootproto: dhcp
+        ip: 10.10.210.205
+        netmask: 255.255.255.0
+
+  10.10.210.205
+    hostname: r29-nc-07
+    install_drive: /dev/disk/by-path/pci-0000:00:1d.0-usb-0:1.5:1.0-scsi-0:0:0:0
+    networks:
+      -
+        device: enp6s0
+        bootproto: dhcp
+        ip: 10.10.210.205
+        netmask: 255.255.255.0
+
+  10.10.210.205
+    hostname: r29-nc-08
+    install_drive: /dev/disk/by-path/pci-0000:00:1d.0-usb-0:1.5:1.0-scsi-0:0:0:0
+    networks:
+      -
+        device: enp6s0
+        bootproto: dhcp
+        ip: 10.10.210.205
+        netmask: 255.255.255.0
+
+  10.10.210.205
+    hostname: r29-nc-09
+    install_drive: /dev/disk/by-path/pci-0000:00:1d.0-usb-0:1.5:1.0-scsi-0:0:0:0
+    networks:
+      -
+        device: enp6s0
+        bootproto: dhcp
+        ip: 10.10.210.205
+        netmask: 255.255.255.0
+
+  10.10.210.205
+    hostname: r29-nc-10
+    install_drive: /dev/disk/by-path/pci-0000:00:1d.0-usb-0:1.5:1.0-scsi-0:0:0:0
+    networks:
+      -
+        device: enp6s0
+        bootproto: dhcp
+        ip: 10.10.210.205
+        netmask: 255.255.255.0
