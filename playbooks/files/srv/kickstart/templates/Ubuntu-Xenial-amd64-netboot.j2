@@ -20,8 +20,8 @@ network --hostname=unprovisioned
 
 zerombr
 clearpart --all
+preseed partman-basicfilesystems/no_swap boolean false
 part /boot --fstype ext2 --size=512 --asprimary
-part swap --fstype=swap --recommended
 part / --fstype xfs --size 1 --asprimary --grow
 bootloader --location=mbr
 
