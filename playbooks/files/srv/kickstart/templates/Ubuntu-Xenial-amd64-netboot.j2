@@ -11,7 +11,7 @@ timezone America/New_York
 preseed passwd/make-user boolean false
 auth --useshadow --enablemd5
 selinux --disabled
-rootpw deathbysexyr29
+rootpw badpassword
 
 {%- for network in target.networks | default([]) %}
 network --device={{ network.device }} --bootproto={{ network.bootproto }}{% if network.ip | default(False) %} --ip={{ network.ip }}{% endif %}{% if network.gateway | default(False) %} --gateway={{ network.gateway }}{% endif %}{% if network.netmask | default(False) %} --netmask={{ network.netmask }}{% endif %}{% if network.bridgeslaves | default(False) %} --bridgeslaves={{ network.bridgeslaves }}{% endif %}{% if network.nameserver | default(False) %} --nameserver={{ network.nameserver }}{% endif %}
