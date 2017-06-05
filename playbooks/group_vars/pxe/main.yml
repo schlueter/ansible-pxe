@@ -1,14 +1,14 @@
 ---
-dnsmasq_dhcp_boot: 192.168.42.2
-dnsmasq_dhcp_hosts: []
-dnsmasq_dhcp_range: 192.168.42.102,192.168.42.102
-dnsmasq_interface: enp0s8
+dnsmasq_dhcp_boot: 10.10.210.102
+
+dnsmasq_dhcp_range: 10.10.210.42,10.10.210.73
+dnsmasq_interface: eno1
 dnsmasq_no_dhcp_interfaces: []
-dnsmasq_only_known_hosts: false
-dnsmasq_router: 192.168.42.1
-dnsmasq_server: 8.8.8.8
+dnsmasq_only_known_hosts: yes
+dnsmasq_router: 10.10.210.1
+dnsmasq_server: 208.78.27.4
 nginx_network_install_port: 8080
-pxe_kickstart_host: 192.168.42.2:8080
+pxe_kickstart_host: 10.10.210.102:8080
 install_isos:
   -
     name: Ubuntu-Xenial-amd64-netboot
@@ -26,6 +26,44 @@ install_isos:
     initrd: initrd.img
     boot_files: [ isolinux/vmlinuz, isolinux/initrd.img ]
 
+dnsmasq_dhcp_hosts:
+  -
+    ip: 10.10.210.191
+    mac: '00:25:b5:01:a0:08'
+  -
+    ip: 10.10.210.192
+    mac: '00:25:b5:01:a0:0e'
+  -
+    ip: 10.10.210.201
+    mac: '00:25:b5:01:a0:01'
+  -
+    ip: 10.10.210.202
+    mac: '00:25:b5:01:a0:02'
+  -
+    ip: 10.10.210.203
+    mac: '00:25:b5:01:a0:04'
+  -
+    ip: 10.10.210.204
+    mac: '00:25:b5:01:a0:0a'
+  -
+    ip: 10.10.210.205
+    mac: '00:25:b5:01:a0:05'
+  -
+    ip: 10.10.210.206
+    mac: '00:25:b5:01:a0:0b'
+  -
+    ip: 10.10.210.207
+    mac: '00:25:b5:01:a0:06'
+  -
+    ip: 10.10.210.208
+    mac: '00:25:b5:01:a0:0c'
+  -
+    ip: 10.10.210.209
+    mac: '00:25:b5:01:a0:07'
+  -
+    ip: 10.10.210.210
+    mac: '00:25:b5:01:a0:0D'
+
 kickstart_host_vars:
   server:
     centos_7_x86_64:
@@ -35,15 +73,5 @@ kickstart_host_vars:
     hostname: pxefresh.local
     networks:
       -
-        device: enp0s8
+        device: enp6s0
         bootproto: dhcp
-
-install_isos:
-  -
-    name: Ubuntu-Xenial-amd64-netboot
-    filename: mini
-    url: http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-amd64/current/images/netboot
-    checksum: md5:fe495d34188a9568c8d166efc5898d22
-    kernel: linux
-    initrd: initrd.gz
-    boot_files: [ linux, initrd.gz ]
