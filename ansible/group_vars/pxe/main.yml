@@ -1,11 +1,14 @@
 ---
-dnsmasq_interface: eno1
-dnsmasq_dhcp_range: 10.10.210.42,10.10.210.73
-dnsmasq_router: 10.10.210.1
-dnsmasq_server: 8.8.8.8
 dnsmasq_dhcp_boot: 10.10.210.102
-pxe_kickstart_host: 10.10.210.102:8080
+
+dnsmasq_dhcp_range: 10.10.210.42,10.10.210.73
+dnsmasq_interface: eno1
+dnsmasq_no_dhcp_interfaces: []
+dnsmasq_only_known_hosts: yes
+dnsmasq_router: 10.10.210.1
+dnsmasq_server: 208.78.27.4
 nginx_network_install_port: 8080
+pxe_kickstart_host: 10.10.210.102:8080
 install_isos:
   -
     name: Ubuntu-Xenial-amd64-netboot
@@ -15,6 +18,13 @@ install_isos:
     kernel: linux
     initrd: initrd.gz
     boot_files: [ linux, initrd.gz ]
+  -
+    name: CentOS-7-x86_64-Minimal
+    url: https://buildlogs.centos.org/rolling/7/isos/x86_64
+    checksum: md5:19193aa7831f35f32dc0f1fc7fb6fc3e
+    kernel: vmlinuz
+    initrd: initrd.img
+    boot_files: [ isolinux/vmlinuz, isolinux/initrd.img ]
 
 dnsmasq_dhcp_hosts:
   -
@@ -56,125 +66,12 @@ dnsmasq_dhcp_hosts:
 
 kickstart_host_vars:
   server:
-    ubuntu_xenial_amd64:
-      url: http://mirror.math.princeton.edu/pub/ubuntu/
+    centos_7_x86_64:
+      url: http://192.168.42.2:8080/isos/CentOS-7-x86_64-Minimal
 
-  10.10.210.191:
-    hostname: control01c
-    install_drive: /dev/disk/by-path/pci-0000:01:00.0-scsi-0:2:0:0
+  default:
+    hostname: pxefresh.local
     networks:
       -
         device: enp6s0
         bootproto: dhcp
-        ip: 10.10.210.191
-        netmask: 255.255.255.0
-
-  10.10.210.192:
-    hostname: control02c
-    install_drive: /dev/disk/by-path/pci-0000:01:00.0-scsi-0:2:0:0
-    networks:
-      -
-        device: enp6s0
-        bootproto: dhcp
-        ip: 10.10.210.205
-        netmask: 255.255.255.0
-
-  10.10.210.205
-    hostname: r29-nc-01
-    install_drive: /dev/disk/by-path/pci-0000:00:1d.0-usb-0:1.5:1.0-scsi-0:0:0:0
-    networks:
-      -
-        device: enp6s0
-        bootproto: dhcp
-        ip: 10.10.210.205
-        netmask: 255.255.255.0
-
-  10.10.210.205
-    hostname: r29-nc-02
-    install_drive: /dev/disk/by-path/pci-0000:00:1d.0-usb-0:1.5:1.0-scsi-0:0:0:0
-    networks:
-      -
-        device: enp6s0
-        bootproto: dhcp
-        ip: 10.10.210.205
-        netmask: 255.255.255.0
-
-  10.10.210.205
-    hostname: r29-nc-03
-    install_drive: /dev/disk/by-path/pci-0000:00:1d.0-usb-0:1.5:1.0-scsi-0:0:0:0
-    networks:
-      -
-        device: enp6s0
-        bootproto: dhcp
-        ip: 10.10.210.205
-        netmask: 255.255.255.0
-
-  10.10.210.205
-    hostname: r29-nc-04
-    install_drive: /dev/disk/by-path/pci-0000:00:1d.0-usb-0:1.5:1.0-scsi-0:0:0:0
-    networks:
-      -
-        device: enp6s0
-        bootproto: dhcp
-        ip: 10.10.210.205
-        netmask: 255.255.255.0
-
-  10.10.210.205
-    hostname: r29-nc-05
-    install_drive: /dev/disk/by-path/pci-0000:00:1d.0-usb-0:1.5:1.0-scsi-0:0:0:0
-    networks:
-      -
-        device: enp6s0
-        bootproto: dhcp
-        ip: 10.10.210.205
-        netmask: 255.255.255.0
-
-  10.10.210.205
-    hostname: r29-nc-06
-    install_drive: /dev/disk/by-path/pci-0000:00:1d.0-usb-0:1.5:1.0-scsi-0:0:0:0
-    networks:
-      -
-        device: enp6s0
-        bootproto: dhcp
-        ip: 10.10.210.205
-        netmask: 255.255.255.0
-
-  10.10.210.205
-    hostname: r29-nc-07
-    install_drive: /dev/disk/by-path/pci-0000:00:1d.0-usb-0:1.5:1.0-scsi-0:0:0:0
-    networks:
-      -
-        device: enp6s0
-        bootproto: dhcp
-        ip: 10.10.210.205
-        netmask: 255.255.255.0
-
-  10.10.210.205
-    hostname: r29-nc-08
-    install_drive: /dev/disk/by-path/pci-0000:00:1d.0-usb-0:1.5:1.0-scsi-0:0:0:0
-    networks:
-      -
-        device: enp6s0
-        bootproto: dhcp
-        ip: 10.10.210.205
-        netmask: 255.255.255.0
-
-  10.10.210.205
-    hostname: r29-nc-09
-    install_drive: /dev/disk/by-path/pci-0000:00:1d.0-usb-0:1.5:1.0-scsi-0:0:0:0
-    networks:
-      -
-        device: enp6s0
-        bootproto: dhcp
-        ip: 10.10.210.205
-        netmask: 255.255.255.0
-
-  10.10.210.205
-    hostname: r29-nc-10
-    install_drive: /dev/disk/by-path/pci-0000:00:1d.0-usb-0:1.5:1.0-scsi-0:0:0:0
-    networks:
-      -
-        device: enp6s0
-        bootproto: dhcp
-        ip: 10.10.210.205
-        netmask: 255.255.255.0
