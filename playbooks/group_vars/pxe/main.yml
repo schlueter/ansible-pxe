@@ -18,13 +18,6 @@ install_isos:
     kernel: linux
     initrd: initrd.gz
     boot_files: [ linux, initrd.gz ]
-  -
-    name: CentOS-7-x86_64-Minimal
-    url: https://buildlogs.centos.org/rolling/7/isos/x86_64
-    checksum: md5:19193aa7831f35f32dc0f1fc7fb6fc3e
-    kernel: vmlinuz
-    initrd: initrd.img
-    boot_files: [ isolinux/vmlinuz, isolinux/initrd.img ]
 
 dnsmasq_dhcp_hosts:
   -
