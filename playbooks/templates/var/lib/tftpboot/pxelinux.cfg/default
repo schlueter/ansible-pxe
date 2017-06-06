@@ -13,7 +13,7 @@ menu vshift 1
 label {{ iso.name }} Kickstart install
   menu label Kickstart {{ iso.name }} install
   kernel {{ iso.name }}/{{ iso.kernel }}
-  append initrd={{ iso.name }}/{{ iso.initrd }} ks=http://{{ pxe_kickstart_host }}/kickstart?{{ iso.name }}
+  append initrd={{ iso.name }}/{{ iso.initrd }} netcfg/choose_interface=enp6s0 ks=http://{{ pxe_kickstart_host }}/kickstart?{{ iso.name }}
 
 label {{ iso.name }} Manual install
   menu label Manual {{ iso.name }} install
