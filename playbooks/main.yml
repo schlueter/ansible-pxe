@@ -8,6 +8,7 @@
     isos_mount_directory: /mnt/isos
     kickstart_wsgi_app_dir: /srv/kickstart
     kickstart_wsgi_app: "{{ kickstart_wsgi_app_dir }}/app.py"
+    download_dir: /tmp
   tasks:
     - name: Install prerequisite apt packages
       apt: update_cache=yes state=latest name='{{ item }}' cache_valid_time=20000
@@ -64,18 +65,18 @@
 
     - name: Download Memtest
       get_url:
-        dest=/tmp/memtest86+-5.01.bin.gz
+        dest={{ download_dir }}/memtest86+-5.01.bin.gz
         url=http://www.memtest.org/download/5.01/memtest86+-5.01.bin.gz
         checksum=md5:14ec4c4d827a49629c41b499303355ed
 
     - name: Decompress memtest
       command:
-        gunzip --keep /tmp/memtest86+-5.01.bin.gz
-        creates=/tmp/memtest86+-5.01.bin
+        gunzip --keep {{ download_dir }}/memtest86+-5.01.bin.gz
+        creates={{ download_dir }}/memtest86+-5.01.bin
 
     - name: Make memtest available for boot
       copy:
-        src=/tmp/memtest86+-5.01.bin
+        src={{ download_dir }}/memtest86+-5.01.bin
         dest={{ tftp_boot_root }}/memtest/memtest
         remote_src=yes
 
@@ -88,7 +89,7 @@
 
     - name: Download install isos
       get_url:
-        dest=/tmp/{{ item.name }}.iso
+        dest={{ download_dir }}/{{ item.name }}.iso
         url={{ item.url }}/{{ item.filename | default(item.name) }}.iso
         checksum={{ item.checksum }}
       with_items: "{{ install_isos }}"
@@ -96,7 +97,7 @@
     - name: Mount install isos
       mount:
         name={{ isos_mount_directory }}/{{ item.name }}
-        src=/tmp/{{ item.name }}.iso
+        src={{ download_dir }}/{{ item.name }}.iso
         fstype=iso9660
         state=mounted
       with_items: "{{ install_isos }}"

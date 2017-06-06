@@ -11,5 +11,6 @@ Vagrant.configure('2') do |config|
     playbook: 'playbooks/main.yml',
     groups: { pxe: %w(default)},
     sudo: true,
-    verbose: 'vv'
+    verbose: 'vv',
+    extra_vars: { download_dir: '/vagrant' }
 end
