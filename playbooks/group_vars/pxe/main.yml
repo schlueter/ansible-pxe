@@ -1,7 +1,7 @@
 ---
 dnsmasq_dhcp_boot: 10.10.210.102
 
-dnsmasq_dhcp_range: 10.10.210.42,10.10.210.73
+dnsmasq_dhcp_range: 10.10.210.191,10.10.210.210
 dnsmasq_interface: eno1
 dnsmasq_no_dhcp_interfaces: []
 dnsmasq_only_known_hosts: yes
