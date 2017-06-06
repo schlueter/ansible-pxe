@@ -21,12 +21,14 @@ network --hostname=unprovisioned
 zerombr
 clearpart --all
 preseed partman-basicfilesystems/no_swap boolean false
+ignoredisk --drives=sda
+pressed partman-auto/disk string /dev/sdb
 part /boot --fstype ext2 --size=512 --asprimary
 part / --fstype xfs --size 1 --asprimary --grow
-bootloader --location=mbr
+bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=/dev/sdb
 
 skipx
-reboot
+poweroff
 
 %post
 mkdir -m0700 /root/.ssh/
