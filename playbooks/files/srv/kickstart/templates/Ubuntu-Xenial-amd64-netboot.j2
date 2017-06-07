@@ -26,14 +26,17 @@ skipx
 poweroff
 
 %packages
-@ubuntu-server
-openssh-server
-curl
-python-minimal
-vim-nox
-tmux
-mosh
 bash-completion
+command-not-found
+curl
+dnsutils
+mosh
+openssh-server
+openssl
+python-minimal
+tmux
+vim-nox
+
 %post
 mkdir -m0700 /root/.ssh/
 
@@ -68,7 +71,7 @@ PrintMotd no
 PrintLastLog yes
 TCPKeepAlive yes
 AcceptEnv LANG LC_*
-Subsystem sftp /usr/libexec/openssh/sftp-server
+Subsystem sftp /usr/lib/openssh/sftp-server
 UsePAM yes
 EOM
 %end
