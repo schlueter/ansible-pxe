@@ -1,21 +1,15 @@
-autostep
 url --url=http://mirror.math.princeton.edu/pub/ubuntu/
-firstboot --disable
-install
-text
-
-keyboard --vckeymap=us --xlayouts='us'
+keyboard us
 lang en_US.UTF-8
 timezone America/New_York
-
 preseed passwd/make-user boolean false
 auth --useshadow --enablemd5
-selinux --disabled
 rootpw badpassword
 
 {%- for network in target.networks | default([]) %}
 network --device={{ network.device }} --bootproto={{ network.bootproto }}{% if network.ip | default(False) %} --ip={{ network.ip }}{% endif %}{% if network.gateway | default(False) %} --gateway={{ network.gateway }}{% endif %}{% if network.netmask | default(False) %} --netmask={{ network.netmask }}{% endif %}{% if network.bridgeslaves | default(False) %} --bridgeslaves={{ network.bridgeslaves }}{% endif %}{% if network.nameserver | default(False) %} --nameserver={{ network.nameserver }}{% endif %}
 {%- endfor %}
+
 network --hostname=unprovisioned
 
 zerombr
@@ -25,11 +19,21 @@ ignoredisk --drives=sda
 pressed partman-auto/disk string /dev/sdb
 part /boot --fstype ext2 --size=512 --asprimary
 part / --fstype xfs --size 1 --asprimary --grow
-bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=/dev/sdb
+bootloader --location=mbr
+preseed pkgsel/include string openssh python-minimal
 
 skipx
 poweroff
 
+%packages
+@ubuntu-server
+openssh-server
+curl
+python-minimal
+vim-nox
+tmux
+mosh
+bash-completion
 %post
 mkdir -m0700 /root/.ssh/
 
@@ -67,5 +71,4 @@ AcceptEnv LANG LC_*
 Subsystem sftp /usr/libexec/openssh/sftp-server
 UsePAM yes
 EOM
-curl https://slack.com/api/chat.postMessage --form token="xoxb-90704100215-8oS9qLSgYkjxr5w3UKgcblAP" --form channel="#squad-ghostbusters" --form username=kickstartbot --form text="test from $(hostname -f): \`\`\`$(ip addr)\`\`\`"
 %end
