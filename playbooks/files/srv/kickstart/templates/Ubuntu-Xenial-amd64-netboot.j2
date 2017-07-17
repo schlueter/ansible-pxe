@@ -33,8 +33,8 @@ openssh-server
 %post
 mkdir -m0700 /root/.ssh/
 
-cat <<EOF >/root/.ssh/authorized_keys
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII1FM61qqc/bDjYREkxl4aZNd+mfXl1RFx5DCNmdj6AX jenkins@jenkins-slave.cloud
+cat <<EOF > /root/.ssh/authorized_keys
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMG3VdUZvZbOYON/mHnEMnRLdOUr41IFP1lV0i2ZoWMu root@pxe
 EOF
 
 chmod 0600 /root/.ssh/authorized_keys
