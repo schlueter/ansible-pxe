@@ -5,12 +5,12 @@ Vagrant.configure('2') do |config|
   config.vm.hostname = HOSTNAME
   config.vm.network :private_network, ip: IP_ADDR
   config.vm.provision 'shell',
-    inline: 'apt-get update && apt-get install -y python-minimal',
+    inline: 'apt-get install -y python-minimal',
     privileged: true
   config.vm.provision :ansible,
-    playbook: 'playbooks/main.yml',
+    playbook: 'playbooks/pxe.yml',
     groups: { pxe: %w(default)},
-    sudo: true,
-    verbose: 'vv',
-    extra_vars: { download_dir: '/vagrant' }
+    raw_arguments: %w(-vv --diff --become),
+    extra_vars: { download_dir: '/vagrant',
+                  pxe_target_interface: 'enp0s8' }
 end
