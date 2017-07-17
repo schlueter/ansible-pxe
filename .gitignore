@@ -1,7 +1,8 @@
 *.retry
 *.vdi
 .vagrant/
+Ubuntu-Xenial-amd64-netboot.iso
 hosts
+memtest86+-5.01.bin*
 pxe_target_name
-memtest86+-5.01.bin
-
+ubuntu-xenial-16.04-cloudimg-console.log
