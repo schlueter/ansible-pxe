@@ -1,12 +1,5 @@
-default vesamenu.c32
+default menu.c32
 timeout 10
-menu title PXE
-menu resolution 640 400
-menu width 60
-menu margin 0
-menu rows {{ install_isos | length * 2 + 4 }}
-menu hshift 2
-menu vshift 1
 
 {% for iso in install_isos %}
 label {{ iso.name }} Kickstart install
@@ -23,16 +16,3 @@ label {{ iso.name }} Manual install
 label Memtest
   menu label Memtest
   kernel memtest/memtest
-
-label cold_reboot
-  menu label Cold reboot
-  com32 reboot.c32
-
-label warm_reboot
-  menu label Warm reboot
-  com32 reboot.c32
-  append --warm
-
-label vesa_info
-  menu label VESA info
-  com32 vesainfo.c32

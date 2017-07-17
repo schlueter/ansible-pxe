@@ -49,9 +49,7 @@
         src=/usr/lib/syslinux/modules/bios/{{ item }}
         dest={{ tftp_boot_root }}/
       with_items:
-        - vesamenu.c32
-        - reboot.c32
-        - vesainfo.c32
+        - menu.c32
         - ldlinux.c32
         - libcom32.c32
         - libutil.c32
