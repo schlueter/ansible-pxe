@@ -21,7 +21,7 @@ test: | create_server create_target
 	@sleep 30
 	@echo "Test machine is ready!"
 	kickseed_ip=$$(vagrant ssh -c 'PAGER=cat sudo -E systemctl status dnsmasq -o cat' | awk '/kickseed/{print $2}') ;\
-	echo 'Try `ssh root@$$(kickseed_ip) -i ssh/id_ed25519`'
+	echo "Try \`ssh root@$$(kickseed_ip) -i ssh/id_ed25519\`"
 
 clean: destroy_server delete_target
 
