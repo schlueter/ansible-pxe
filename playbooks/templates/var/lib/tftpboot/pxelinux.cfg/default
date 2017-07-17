@@ -1,9 +1,8 @@
 default vesamenu.c32
-timeout 30
-menu title R29 PXE Menu
-menu background r29.jpg
+timeout 10
+menu title PXE
 menu resolution 640 400
-menu width 55
+menu width 60
 menu margin 0
 menu rows {{ install_isos | length * 2 + 4 }}
 menu hshift 2
@@ -13,7 +12,7 @@ menu vshift 1
 label {{ iso.name }} Kickstart install
   menu label Kickstart {{ iso.name }} install
   kernel {{ iso.name }}/{{ iso.kernel }}
-  append initrd={{ iso.name }}/{{ iso.initrd }} netcfg/choose_interface=enp6s0 ks=http://{{ pxe_kickstart_host }}/kickstart?{{ iso.name }}
+  append initrd={{ iso.name }}/{{ iso.initrd }} netcfg/choose_interface={{ pxe_target_interface }} ks=http://{{ pxe_kickstart_host }}/kickstart?{{ iso.name }}
 
 label {{ iso.name }} Manual install
   menu label Manual {{ iso.name }} install

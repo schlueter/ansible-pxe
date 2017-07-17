@@ -4,6 +4,7 @@
   become: yes
   vars:
     network_install_http_root: /srv/network-install
+    nginx_network_install_port: 80
     tftp_boot_root: /var/lib/tftpboot
     isos_mount_directory: /mnt/isos
     kickstart_wsgi_app_dir: /srv/kickstart
@@ -33,9 +34,6 @@
       with_items:
         - pxelinux.cfg
         - memtest
-
-    - name: Copy image for pxe menu background
-      copy: src=r29.jpg dest={{ tftp_boot_root }}/
 
     - name: Copy pxe files from pxelinux
       copy:
@@ -143,7 +141,7 @@
     - name: Install kickstart app data
       copy:
         dest={{ kickstart_wsgi_app_dir }}/host_vars.yml
-        content="{{ kickstart_host_vars | to_nice_yaml }}"
+        content="{{ kickstart_host_vars | default({}) | to_nice_yaml }}"
 
     - name: Copy kickstart template files
       copy:
