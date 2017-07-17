@@ -1,4 +1,3 @@
-url --url=http://mirror.math.princeton.edu/pub/ubuntu/
 keyboard us
 lang en_US.UTF-8
 timezone America/New_York
@@ -37,34 +36,8 @@ cat <<EOF > /root/.ssh/authorized_keys
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMG3VdUZvZbOYON/mHnEMnRLdOUr41IFP1lV0i2ZoWMu root@pxe
 EOF
 
-chmod 0600 /root/.ssh/authorized_keys
-
-cat <<EOM >/etc/ssh/sshd_config
-# Installed by kickstart http://github.com/refinery29/pxe
-Port 22
-Protocol 2
-HostKey /etc/ssh/ssh_host_rsa_key
-HostKey /etc/ssh/ssh_host_dsa_key
-HostKey /etc/ssh/ssh_host_ed25519_key
-UsePrivilegeSeparation sandbox
-KeyRegenerationInterval 3600
-SyslogFacility AUTH
-LogLevel VERBOSE
-PermitRootLogin yes
-StrictModes yes
-RSAAuthentication yes
-PubkeyAuthentication yes
-IgnoreRhosts yes
-RhostsRSAAuthentication no
-HostbasedAuthentication no
-PermitEmptyPasswords no
-ChallengeResponseAuthentication no
-PasswordAuthentication no
-PrintMotd no
-PrintLastLog yes
-TCPKeepAlive yes
-AcceptEnv LANG LC_*
-Subsystem sftp /usr/lib/openssh/sftp-server
-UsePAM yes
-EOM
-%end
+# TODO this should not be hardcoded
+cat <<EOF >> /etc/network/interfaces
+auto enp0s3
+iface enp0s3 inet dhcp
+EOF
