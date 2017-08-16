@@ -12,6 +12,12 @@ install_isos:
     initrd: initrd.gz
     boot_files: [ linux, initrd.gz ]
 
+pxe_installers:
+  -
+    name: Arch
+    url: https://www.archlinux.org/static/netboot/ipxe.8da38b4a9310.pxe
+    sig: https://www.archlinux.org/static/netboot/ipxe.pxe.919b21409aa7.sig
+
 kickstart_host_vars:
   server:
     centos_7_x86_64:
