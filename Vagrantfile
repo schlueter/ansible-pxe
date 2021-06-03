@@ -1,5 +1,5 @@
 Vagrant.configure('2') do |config|
-  HOSTNAME = 'pxe.local.rf29.net'
+  HOSTNAME = 'pxe.local'
   IP_ADDR = '192.168.42.2'
   config.vm.box = 'ubuntu/xenial64'
   config.vm.hostname = HOSTNAME
