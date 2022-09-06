@@ -6,8 +6,8 @@ install_isos:
   -
     name: Ubuntu-Xenial-amd64-netboot
     filename: mini
-    url: http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-amd64/current/images/netboot
-    checksum: md5:fe495d34188a9568c8d166efc5898d22
+    url: http://archive.ubuntu.com/ubuntu/dists/xenial-updates/main/installer-amd64/current/images/netboot/
+    checksum: md5:76d3b37ea78a6848379fbdab9f0f0c55
     kernel: linux
     initrd: initrd.gz
     boot_files: [ linux, initrd.gz ]
