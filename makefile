@@ -37,7 +37,6 @@ edit: ## Edit source files
 	-o -name 'id_*' \
 	-o -name '*.iso' \
 	-o -name '*.log' \
-	-o -name 'memtest86*' \
 	-o -regex '.*git.*' \
 	-o -regex '.*\.vagrant.*' \
 	\) -exec $$EDITOR {} +

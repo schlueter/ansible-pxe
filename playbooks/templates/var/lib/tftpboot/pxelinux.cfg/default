@@ -13,6 +13,3 @@ label {{ iso.name }} Manual install
   append initrd={{ iso.name }}/{{ iso.initrd }} method=http://{{ pxe_kickstart_host }}/isos/{{ iso.name }} devfs=nomount
 
 {% endfor %}
-label Memtest
-  menu label Memtest
-  kernel memtest/memtest

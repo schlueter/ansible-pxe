@@ -33,7 +33,6 @@
       file: state=directory path={{ tftp_boot_root }}/{{ item }}/
       with_items:
         - pxelinux.cfg
-        - memtest
 
     - name: Copy pxe files from pxelinux
       copy:
@@ -58,23 +57,6 @@
       template:
         src=templates/var/lib/tftpboot/pxelinux.cfg/default
         dest={{ tftp_boot_root }}/pxelinux.cfg/
-
-    - name: Download Memtest
-      get_url:
-        dest={{ download_dir }}/memtest86+-5.01.bin.gz
-        url=http://www.memtest.org/download/5.01/memtest86+-5.01.bin.gz
-        checksum=md5:14ec4c4d827a49629c41b499303355ed
-
-    - name: Decompress memtest
-      command:
-        gunzip --keep {{ download_dir }}/memtest86+-5.01.bin.gz
-        creates={{ download_dir }}/memtest86+-5.01.bin
-
-    - name: Make memtest available for boot
-      copy:
-        src={{ download_dir }}/memtest86+-5.01.bin
-        dest={{ tftp_boot_root }}/memtest/memtest
-        remote_src=yes
 
     # Setup Install disk
     - name: Create mount directories
