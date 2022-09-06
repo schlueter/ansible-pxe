@@ -12,10 +12,14 @@
     download_dir: /tmp
   tasks:
     - name: Install prerequisite apt packages
+      apt: update_cache=yes name='{{ item }}' cache_valid_time=20000
+      with_items:
+        - dnsmasq=2.75-1ubuntu0.16.04.10
+        - nginx=1.10.3-0ubuntu0.16.04.5
+
+    - name: Install prerequisite apt packages
       apt: update_cache=yes state=latest name='{{ item }}' cache_valid_time=20000
       with_items:
-        - dnsmasq
-        - nginx
         - syslinux
         - pxelinux
         - uwsgi
