@@ -1,6 +1,6 @@
 Vagrant.configure('2') do |config|
   HOSTNAME = 'pxe.local'
-  IP_ADDR = '192.168.42.2'
+  IP_ADDR = '192.168.56.2'
   config.vm.box = 'ubuntu/xenial64'
   config.vm.hostname = HOSTNAME
   config.vm.network :private_network, ip: IP_ADDR
